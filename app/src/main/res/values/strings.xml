@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">GoTest</string>
+    <string name="board_size">Board size:</string>
+    <string name="nine">9</string>
+    <string name="thirteen">13</string>
+    <string name="nineteen">19</string>
+    <string name="handicap">Handicap:</string>
+    <string name="go_button">Go!</string>
+</resources>

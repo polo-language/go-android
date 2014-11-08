@@ -7,7 +7,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 
 public class BoardFragment extends Fragment {
   private int boardSize;
@@ -29,14 +29,14 @@ public class BoardFragment extends Fragment {
 
   @Override
   public void onViewCreated(View view, Bundle savedInstanceState) {
-    /*DisplayMetrics displayMetrics = getActivity().getResources().getDisplayMetrics();
-    int boardWidth = Math.max(displayMetrics.widthPixels,
+    DisplayMetrics displayMetrics = getActivity().getResources().getDisplayMetrics();
+    int boardWidth = Math.min(displayMetrics.widthPixels,
                               displayMetrics.heightPixels);
-    */
     View boardContainer = getActivity().findViewById(R.id.board_container);
-    //boardContainer.setLayoutParams(new LinearLayout.LayoutParams(boardWidth, boardWidth));
-
-    //boardContainer.setBackgroundColor(0xFF0000FF);
+    RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(boardWidth, boardWidth);
+    layoutParams.addRule(RelativeLayout.CENTER_VERTICAL);
+    boardContainer.setLayoutParams(layoutParams);
+    boardContainer.setBackgroundColor(0xFF0000FF);
     View testView = getActivity().findViewById(R.id.test_view_on_board);
     testView.setBackgroundColor(0xFFFF0000);
   }

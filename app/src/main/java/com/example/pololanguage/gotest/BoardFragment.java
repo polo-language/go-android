@@ -3,7 +3,6 @@ package com.example.pololanguage.gotest;
 import android.app.Fragment;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +11,7 @@ import android.widget.RelativeLayout;
 public class BoardFragment extends Fragment {
   private int boardSize;
   private int handicap;
+  private int boardWidth;
 
   protected static BoardFragment newInstance(int boardSize, int handicap) {
     BoardFragment frag = new BoardFragment();
@@ -24,19 +24,22 @@ public class BoardFragment extends Fragment {
   @Override
   public View onCreateView(LayoutInflater inflater,
                            ViewGroup container, Bundle icicle) {
+    DisplayMetrics displayMetrics = getActivity().getResources()
+                                                 .getDisplayMetrics();
+    boardWidth = Math.min(displayMetrics.widthPixels,
+                          displayMetrics.heightPixels);
     return inflater.inflate(R.layout.board, container, false);
   }
 
   @Override
   public void onViewCreated(View view, Bundle savedInstanceState) {
-    DisplayMetrics displayMetrics = getActivity().getResources().getDisplayMetrics();
-    int boardWidth = Math.min(displayMetrics.widthPixels,
-                              displayMetrics.heightPixels);
     View boardContainer = getActivity().findViewById(R.id.board_container);
-    RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(boardWidth, boardWidth);
+    RelativeLayout.LayoutParams layoutParams =
+            new RelativeLayout.LayoutParams(boardWidth, boardWidth);
     layoutParams.addRule(RelativeLayout.CENTER_VERTICAL);
     boardContainer.setLayoutParams(layoutParams);
-    boardContainer.setBackgroundColor(0xFF0000FF);
+    boardContainer.setBackgroundResource(R.drawable.board_9x9);
+    //boardContainer.setBackgroundColor(0xFF0000FF);
     View testView = getActivity().findViewById(R.id.test_view_on_board);
     testView.setBackgroundColor(0xFFFF0000);
   }

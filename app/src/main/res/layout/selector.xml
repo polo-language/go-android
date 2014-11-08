@@ -3,11 +3,11 @@
     android:layout_height="match_parent"
     android:layout_width="match_parent"
     android:orientation="vertical"
-    android:layout_margin="50dip">
+    android:layout_margin="50dp">
 
     <LinearLayout
         android:layout_width="wrap_content"
-        android:layout_height="0dip"
+        android:layout_height="0dp"
         android:orientation="vertical"
         android:layout_weight="40">
         <TextView
@@ -19,8 +19,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:layout_marginStart="100dip"
-            android:layout_marginLeft="100dip"
+            android:layout_marginStart="100dp"
+            android:layout_marginLeft="100dp"
             android:checkedButton="@+id/board_size_radio_9">
             <RadioButton
                 android:id="@id/board_size_radio_9"
@@ -44,7 +44,7 @@
     </LinearLayout>
     <LinearLayout
         android:layout_width="wrap_content"
-        android:layout_height="0dip"
+        android:layout_height="0dp"
         android:orientation="vertical"
         android:layout_weight="30">
         <TextView
@@ -55,15 +55,15 @@
             android:id="@+id/handicap_spinner"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="100dip"
-            android:layout_marginLeft="100dip"/>
+            android:layout_marginStart="100dp"
+            android:layout_marginLeft="100dp"/>
     </LinearLayout>
     <Button
         android:layout_width="wrap_content"
-        android:layout_height="0dip"
+        android:layout_height="0dp"
         android:layout_weight="30"
-        android:layout_marginStart="100dip"
-        android:layout_marginLeft="100dip"
+        android:layout_marginStart="100dp"
+        android:layout_marginLeft="100dp"
         android:text="@string/go_button"
         android:onClick="onGoClicked"/>
 

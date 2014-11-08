@@ -1,0 +1,6 @@
+create HTML resume
+
+204 - RelativeLayout
+
+messages using toast
+account for case where space left for "board_container" is shorter than the width of the screen (i.e. find the min dim there _first_)

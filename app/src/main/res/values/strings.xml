@@ -6,4 +6,8 @@
     <string name="nineteen">19</string>
     <string name="handicap">Handicap:</string>
     <string name="go_button">Go!</string>
+    <string name="game_header">Polo Go</string>
+    <string name="undo_button">Undo</string>
+    <string name="pass_button">Pass</string>
+    <string name="reset_button">Reset</string>
 </resources>

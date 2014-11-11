@@ -4,3 +4,19 @@ create HTML resume
 
 messages using toast
 account for case where space left for "board_container" is shorter than the width of the screen (i.e. find the min dim there _first_)
+
+
+9x9:
+615 total
+15 each margin
+65 each stone
+
+13x13:
+615 total
+8 each margin ?
+44 each stone
+
+19x19:
+615 total
+13 each margin ?
+29 each stone

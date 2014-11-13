@@ -1,6 +1,7 @@
 package com.example.pololanguage.gotest;
 
 import android.app.Fragment;
+import android.content.Context;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -8,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
+import java.util.ArrayList;
 
 public class BoardFragment extends Fragment {
   private int boardSize;
@@ -17,8 +19,13 @@ public class BoardFragment extends Fragment {
   private int marginTop;
   private int marginLeft;
   private int boardImage;
-  private static final int STONE_BLACK = R.drawable.stone_black_55x55;
-  private static final int STONE_WHITE = R.drawable.stone_white_55x55;
+  private int[] xCoords;
+  private int[] yCoords;
+  private ArrayList<Stone> stoneArray;
+  private Stone cursor;
+  private RelativeLayout container;
+  // DELETE: private static final int STONE_BLACK = R.drawable.stone_black_55x55;
+  //         private static final int STONE_WHITE = R.drawable.stone_white_55x55;
 
   private static final float NINE_MARGINMODIFIER = (float)10/615;
   private static final float NINE_STONEMODIFIER = (float)65/615;
@@ -26,7 +33,7 @@ public class BoardFragment extends Fragment {
   private static final float THIRTEEN_STONEMODIFIER = (float)44/615;
   private static final float NINETEEN_MARGINMODIFIER = (float)20/615;
   private static final float NINETEEN_STONEMODIFIER = (float)29/615;
-  private static final int PADDING = 2;
+  private static final int PADDING = 2; // should be relative as well
 
   protected static BoardFragment newInstance(int boardSize, int handicap) {
     BoardFragment frag = new BoardFragment();
@@ -66,11 +73,16 @@ public class BoardFragment extends Fragment {
       default:
         Log.e("Board#onCreateView", "Incorrect board size (not 9, 13, or 19).");
     }
+    setCoordinateArrays();
+  }
 
-    Log.i("Board#onCreateView:", "boardWidth: " + boardWidth);
-    Log.i("Board#onCreateView:", "stoneWidth: " + stoneWidth);
-    Log.i("Board#onCreateView:", "marginLeft: " + marginLeft);
-    Log.i("Board#onCreateView:", "marginLeft: " + marginTop);
+  private void setCoordinateArrays() {
+    xCoords = new int[boardSize];
+    yCoords = new int[boardSize];
+    for(int i = 0; i < boardSize; ++i) {
+      xCoords[i] = marginLeft + i*(PADDING + stoneWidth);
+      yCoords[i] = marginTop + i*(PADDING + stoneWidth);
+    }
   }
 
   @Override
@@ -87,48 +99,40 @@ public class BoardFragment extends Fragment {
     layoutParams.addRule(RelativeLayout.CENTER_VERTICAL);
     boardContainer.setLayoutParams(layoutParams);
     boardContainer.setBackgroundResource(boardImage);
-    //boardContainer.setBackgroundColor(0xFF0000FF);
+    container = (RelativeLayout)getActivity().findViewById(R.id.board_rel_layout);
 
-    /*
-    View testView = getActivity().findViewById(R.id.test_view_on_board);
-    testView.setBackgroundColor(0xFFFF0000);
-    RelativeLayout.LayoutParams testLayoutParams = new RelativeLayout.LayoutParams(stoneWidth, stoneWidth);
-    testLayoutParams.leftMargin = marginLeft;
-    testLayoutParams.topMargin = marginTop;
-    testView.setLayoutParams(testLayoutParams);
+    cursor = new Stone(50, 50, StoneColor.BLACK);
+    cursor.setAlpha((float)0.5);
 
-    View test2 = getActivity().findViewById(R.id.test_view_2);
-    test2.setBackgroundColor(0xFFA000C0);
-    RelativeLayout.LayoutParams testLayoutParams2 = new RelativeLayout.LayoutParams(stoneWidth, stoneWidth);
-    testLayoutParams2.leftMargin = marginLeft + 6*stoneWidth;
-    testLayoutParams2.topMargin =  marginTop + 3*stoneWidth;
-    test2.setLayoutParams(testLayoutParams2);
-
-    View test3 = getActivity().findViewById(R.id.test_view_3);
-    test3.setBackgroundColor(0xFF0064C0);
-    RelativeLayout.LayoutParams testLayoutParams3 = new RelativeLayout.LayoutParams(stoneWidth, stoneWidth);
-    testLayoutParams3.leftMargin = marginLeft + 5*stoneWidth;
-    testLayoutParams3.topMargin =  marginTop + 3*stoneWidth;
-    test3.setLayoutParams(testLayoutParams3);
-
-    View test4 = getActivity().findViewById(R.id.test_view_4);
-    test4.setBackgroundColor(0xFFA6D267);
-    RelativeLayout.LayoutParams testLayoutParams4 = new RelativeLayout.LayoutParams(stoneWidth, stoneWidth);
-    testLayoutParams4.leftMargin = marginLeft + 9*stoneWidth;
-    testLayoutParams4.topMargin =  marginTop + 9*stoneWidth;
-    test4.setLayoutParams(testLayoutParams4);
-    */
-    RelativeLayout container = (RelativeLayout) getActivity().findViewById(R.id.board_rel_layout);
     for(int i = 0; i < boardSize; ++i) {
       for(int j = 0; j < boardSize; ++j) {
-        View newView = new View(getActivity());
-        RelativeLayout.LayoutParams layout = new RelativeLayout.LayoutParams(stoneWidth, stoneWidth);
-        layout.leftMargin = marginLeft + i*(PADDING + stoneWidth);
-        layout.topMargin =  marginTop + j*(PADDING + stoneWidth);
-        newView.setLayoutParams(layout);
-        newView.setBackgroundResource(((boardSize*i + j) % 2 == 0)? STONE_BLACK : STONE_WHITE);
-        container.addView(newView);
+        StoneColor color = ((boardSize*i + j) % 2 == 0)? StoneColor.BLACK : StoneColor.WHITE;
+        // TEST: fill board with stones
+        new Stone(marginLeft + i*(PADDING + stoneWidth),
+                  marginTop + j*(PADDING + stoneWidth),
+                  color);
       }
+    }
+  }
+
+  enum StoneColor {
+    BLACK (R.drawable.stone_black_55x55),
+    WHITE (R.drawable.stone_white_55x55);
+
+    int resource;
+    StoneColor(int resource) { this.resource = resource; }
+    int getResource() { return resource; }
+  }
+
+  private class Stone extends View {
+    Stone(int x, int y, StoneColor color) {
+      super(BoardFragment.this.getActivity());
+      RelativeLayout.LayoutParams layout = new RelativeLayout.LayoutParams(stoneWidth, stoneWidth);
+      layout.leftMargin = x;
+      layout.topMargin = y;
+      setLayoutParams(layout);
+      setBackgroundResource(color.getResource());
+      container.addView(this);
     }
   }
 }

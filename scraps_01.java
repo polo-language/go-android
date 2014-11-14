@@ -41,7 +41,8 @@ for alpha <1, override: public boolean hasOverlappingRendering () to return fals
       final int Y = (int) event.getRawY();
       switch (event.getActionMasked()) {
           case MotionEvent.ACTION_DOWN:
-              RelativeLayout.LayoutParams lParams = (RelativeLayout.LayoutParams) view.getLayoutParams();
+              RelativeLayout.LayoutParams lParams =
+                  (RelativeLayout.LayoutParams) view.getLayoutParams();
               _xDelta = X - lParams.leftMargin;
               _yDelta = Y - lParams.topMargin;
               break;
@@ -52,7 +53,8 @@ for alpha <1, override: public boolean hasOverlappingRendering () to return fals
           case MotionEvent.ACTION_POINTER_UP:
               break;
           case MotionEvent.ACTION_MOVE:
-              RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) view.getLayoutParams();
+              RelativeLayout.LayoutParams layoutParams =
+                  (RelativeLayout.LayoutParams) view.getLayoutParams();
               layoutParams.leftMargin = X - _xDelta;
               layoutParams.topMargin = Y - _yDelta;
               layoutParams.rightMargin = -250;

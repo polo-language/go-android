@@ -6,10 +6,12 @@ import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class BoardFragment extends Fragment {
   private int boardSize;
@@ -21,11 +23,10 @@ public class BoardFragment extends Fragment {
   private int boardImage;
   private int[] xCoords;
   private int[] yCoords;
-  private ArrayList<Stone> stoneArray;
+  private ArrayList<Coordinate> moveOrder;
+  private HashMap<Coordinate, Stone> stoneMap;
   private Stone cursor;
   private RelativeLayout container;
-  // DELETE: private static final int STONE_BLACK = R.drawable.stone_black_55x55;
-  //         private static final int STONE_WHITE = R.drawable.stone_white_55x55;
 
   private static final float NINE_MARGINMODIFIER = (float)10/615;
   private static final float NINE_STONEMODIFIER = (float)65/615;
@@ -101,18 +102,19 @@ public class BoardFragment extends Fragment {
     boardContainer.setBackgroundResource(boardImage);
     container = (RelativeLayout)getActivity().findViewById(R.id.board_rel_layout);
 
-    cursor = new Stone(50, 50, StoneColor.BLACK);
-    cursor.setAlpha((float)0.5);
-
     for(int i = 0; i < boardSize; ++i) {
       for(int j = 0; j < boardSize; ++j) {
         StoneColor color = ((boardSize*i + j) % 2 == 0)? StoneColor.BLACK : StoneColor.WHITE;
         // TEST: fill board with stones
-        new Stone(marginLeft + i*(PADDING + stoneWidth),
-                  marginTop + j*(PADDING + stoneWidth),
-                  color);
+        new Stone(xCoords[i], yCoords[i], color);
       }
     }
+
+    cursor = new Stone(200, 100, StoneColor.BLACK);
+    cursor.setAlpha(0.7f);
+    CursorListener cursorListener = new CursorListener();
+    cursor.setOnTouchListener(cursorListener);
+    cursor.setOnLongClickListener(cursorListener);
   }
 
   enum StoneColor {
@@ -122,17 +124,73 @@ public class BoardFragment extends Fragment {
     int resource;
     StoneColor(int resource) { this.resource = resource; }
     int getResource() { return resource; }
+    StoneColor getOther() {
+      if (this == BLACK) return WHITE;
+      else return BLACK;
+    }
+  }
+
+  private class Coordinate {
+    int x;
+    int y;
   }
 
   private class Stone extends View {
+    int x;
+    int y;
+    StoneColor color;
+
     Stone(int x, int y, StoneColor color) {
       super(BoardFragment.this.getActivity());
       RelativeLayout.LayoutParams layout = new RelativeLayout.LayoutParams(stoneWidth, stoneWidth);
+      this.x = x;
+      this.y = y;
+      this.color = color;
       layout.leftMargin = x;
       layout.topMargin = y;
       setLayoutParams(layout);
       setBackgroundResource(color.getResource());
       container.addView(this);
+    }
+
+    void toggleColor() {
+      color = color.getOther();
+      setBackgroundResource(color.getResource());
+    }
+  }
+
+  private class CursorListener implements View.OnTouchListener, View.OnLongClickListener {
+    private int xDelta;
+    private int yDelta;
+
+    @Override
+    public boolean onTouch(View view, MotionEvent event) {
+      final int X = (int) event.getRawX();
+      final int Y = (int) event.getRawY();
+      switch (event.getActionMasked()) {
+        case MotionEvent.ACTION_DOWN:
+          RelativeLayout.LayoutParams lParams =
+                  (RelativeLayout.LayoutParams) view.getLayoutParams();
+          xDelta = X - lParams.leftMargin;
+          yDelta = Y - lParams.topMargin;
+          break;
+        case MotionEvent.ACTION_MOVE:
+          RelativeLayout.LayoutParams layoutParams =
+                  (RelativeLayout.LayoutParams) view.getLayoutParams();
+          layoutParams.leftMargin = X - xDelta;
+          layoutParams.topMargin = Y - yDelta;
+          layoutParams.rightMargin = -250;
+          layoutParams.bottomMargin = -250;
+          view.setLayoutParams(layoutParams);
+          break;
+      }
+      return false;
+    }
+
+    @Override
+    public boolean onLongClick(View view) {
+      ((Stone) view).toggleColor();
+      return true;
     }
   }
 }

@@ -9,6 +9,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,6 +25,7 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
   private int[] xCoords;
   private int[] yCoords;
   private boolean firstTouch = true;
+  private boolean firstPass = false;
   private StoneColor currentColor = StoneColor.BLACK;
   private ArrayList<BoxCoords> moves = new ArrayList<BoxCoords>();
   private Map<BoxCoords, Stone> stoneMap = new HashMap<BoxCoords, Stone>();
@@ -135,6 +137,12 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
     firstTouch = false;
   }
 
+  private void removeCursor() {
+    if (cursor != null) container.removeView(cursor);
+    if (box != null) container.removeView(box);
+    firstTouch = true;
+  }
+
   private BoxCoords getNearestGridCoords(int x, int y) {
     int minX = Integer.MAX_VALUE;
     int minY = Integer.MAX_VALUE;
@@ -155,15 +163,69 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
     return new BoxCoords(argminX, argminY);
   }
 
-  // INNER CLASSES:
+  //////////////////////////////////
+  // BUTTON onClick LISTENERS
+  public void undo() {
+    if (moves.isEmpty()) {
+      Toast.makeText(getActivity(), R.string.no_moves_to_undo, Toast.LENGTH_LONG)
+              .show();
+      return;
+    }
+    BoxCoords lastMove = moves.remove(moves.size() - 1);
+    Stone lastStone = stoneMap.remove(lastMove);
+    container.removeView(lastStone);
+    Toast.makeText(getActivity(),
+            lastStone.color == StoneColor.BLACK ?
+                    R.string.undo_black : R.string.undo_white,
+            Toast.LENGTH_SHORT).show();
+  }
 
+  public void pass() {
+    if (firstPass) {
+      endGame();
+      return;
+    }
+    removeCursor();
+    Toast.makeText(getActivity(),
+            currentColor == StoneColor.BLACK ?
+                    R.string.pass_black : R.string.pass_white,
+            Toast.LENGTH_SHORT).show();
+    currentColor = currentColor.getOther();
+    firstPass = true;
+  }
+
+  public void endGame() {
+    removeCursor();
+    container.setOnTouchListener(null);
+    container.setClickable(false);
+    getActivity().findViewById(R.id.undo_button).setEnabled(false);
+    getActivity().findViewById(R.id.pass_button).setEnabled(false);
+    getActivity().findViewById(R.id.game_over).setVisibility(View.VISIBLE);
+  }
+
+  public void reset() {
+    container.removeAllViews();
+    stoneMap.clear();
+    moves.clear();
+    container.setOnTouchListener(this);
+    getActivity().findViewById(R.id.undo_button).setEnabled(true);
+    getActivity().findViewById(R.id.pass_button).setEnabled(true);
+    getActivity().findViewById(R.id.game_over).setVisibility(View.INVISIBLE);
+    Toast.makeText(getActivity(), R.string.reset, Toast.LENGTH_LONG).show();
+  }
+
+  //////////////////////////////////
+  // INNER CLASSES:
   enum StoneColor {
     BLACK (R.drawable.stone_black_55x55),
     WHITE (R.drawable.stone_white_55x55);
 
     int resource;
+
     StoneColor(int resource) { this.resource = resource; }
+
     int getResource() { return resource; }
+
     StoneColor getOther() {
       if (this == BLACK) return WHITE;
       else return BLACK;
@@ -207,11 +269,6 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
       setLayoutParams(layout);
       setBackgroundResource(color.getResource());
       container.addView(this);
-    }
-
-    void toggleColor() {
-      color = color.getOther();
-      setBackgroundResource(color.getResource());
     }
 
     private void move(int x, int y) {
@@ -268,10 +325,9 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
     @Override
     public void onClick(View view) {
       placeStone();
+      removeCursor();
       currentColor = currentColor.getOther();
-      firstTouch = true;
-      container.removeView(cursor);
-      container.removeView(box);
+      firstPass = false;
     }
 
     void placeStone() {

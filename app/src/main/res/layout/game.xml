@@ -5,13 +5,16 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <!--TextView
+    <TextView
+        android:id="@+id/game_over"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:gravity="center"
         android:textSize="30sp"
-        android:text="@string/game_header" /-->
+        android:textColor="#ff851531"
+        android:visibility="invisible"
+        android:text="@string/game_over" />
 
     <FrameLayout
         android:id="@+id/board_container"
@@ -28,12 +31,14 @@
             android:id="@+id/undo_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/undo_button" />
+            android:text="@string/undo_button"
+            android:onClick="undo"/>
         <Button
             android:id="@+id/pass_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/pass_button" />
+            android:text="@string/pass_button"
+            android:onClick="pass"/>
         <Space
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -43,7 +48,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/reset_button"
-            />
+            android:onClick="reset"/>
     </LinearLayout>
 
 </RelativeLayout>

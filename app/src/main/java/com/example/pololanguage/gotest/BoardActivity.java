@@ -7,6 +7,7 @@ import android.view.View;
 public class BoardActivity extends Activity {
   public static final String EXTRA_BOARD_SIZE = "board_size";
   public static final String EXTRA_HANDICAP = "handicap";
+  BoardFragment board;
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
@@ -19,10 +20,22 @@ public class BoardActivity extends Activity {
 
     if (findViewById(R.id.board_container) != null) {
       if (savedInstanceState != null) { return; }
+
+      board = BoardFragment.newInstance(boardSize, handicap);
       getFragmentManager().beginTransaction()
-                          .add(R.id.board_container,
-                               BoardFragment.newInstance(boardSize, handicap))
-                          .commit();
+                          .add(R.id.board_container, board).commit();
     }
+  }
+
+  public void undo(View view) {
+    if (board != null) board.undo();
+  }
+
+  public void pass(View view) {
+    if (board != null) board.pass();
+  }
+
+  public void reset(View view) {
+    if (board != null) board.reset();
   }
 }

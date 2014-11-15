@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 public class BoardFragment extends Fragment implements View.OnTouchListener {
   private int boardSize;
@@ -25,7 +26,7 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
   private boolean firstTouch = true;
   private StoneColor currentColor = StoneColor.BLACK;
   private ArrayList<BoxCoords> moves = new ArrayList<BoxCoords>();
-  private HashMap<BoxCoords, Stone> stoneMap = new HashMap<BoxCoords, Stone>();
+  private Map<BoxCoords, Stone> stoneMap = new HashMap<BoxCoords, Stone>();
   private RelativeLayout container;
   private Stone cursor;
   private Box box;
@@ -104,15 +105,6 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
     boardContainer.setBackgroundResource(boardImage);
     container = (RelativeLayout)getActivity().findViewById(R.id.board_rel_layout);
     container.setOnTouchListener(this);
-
-    for(int i = 0; i < boardSize; ++i) {
-      for(int j = 0; j < boardSize; ++j) {
-        StoneColor color = ((boardSize*i + j) % 2 == 0)?
-                StoneColor.BLACK : StoneColor.WHITE;
-        // TEST: fill board with stones
-        new Stone(xCoords[i], yCoords[i], color);
-      }
-    }
   }
 
   @Override
@@ -180,9 +172,22 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
 
   private class BoxCoords {
     int x, y;
+
     BoxCoords(int x, int y) {
       this.x = x;
       this.y = y;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+      if (other == null || this.getClass() != other.getClass())
+        return false;
+      return (x == ((BoxCoords)other).x && y == ((BoxCoords)other).y);
+    }
+
+    @Override
+    public int hashCode() {
+      return ((Integer) (x + boardSize*y)).hashCode();
     }
   }
 
@@ -240,29 +245,28 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
       return coords;
     }
 
-    private void setCoords(int x, int y) {
-      coords.x = x;
-      coords.y = y;
+    private void setCoords(BoxCoords boxCoords) {
+      coords.x = boxCoords.x;
+      coords.y = boxCoords.y;
       RelativeLayout.LayoutParams boxParams =
               (RelativeLayout.LayoutParams) getLayoutParams();
-      boxParams.leftMargin = xCoords[x];
-      boxParams.topMargin = yCoords[y];
+      boxParams.leftMargin = xCoords[boxCoords.x];
+      boxParams.topMargin = yCoords[boxCoords.y];
       setLayoutParams(boxParams);
     }
 
     private void snapToGrid(int x, int y) {
       BoxCoords newBoxCoords = getNearestGridCoords(x, y);
-      // TODO:
-      // check if space is occupied by a stone in stoneMap
-      // if so, return;
-      setCoords(newBoxCoords.x, newBoxCoords.y);
+
+      if (stoneMap.containsKey(newBoxCoords)) { return; }
+
+      setCoords(newBoxCoords);
     }
   }
 
   private class CursorListener implements View.OnClickListener {
     @Override
     public void onClick(View view) {
-      // TODO:
       placeStone();
       currentColor = currentColor.getOther();
       firstTouch = true;

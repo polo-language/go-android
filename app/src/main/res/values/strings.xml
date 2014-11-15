@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">GoTest</string>
+    <string name="app_name">Polo Go</string>
     <string name="board_size">Board size:</string>
     <string name="nine">9</string>
     <string name="thirteen">13</string>

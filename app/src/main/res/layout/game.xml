@@ -5,13 +5,13 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <TextView
+    <!--TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:gravity="center"
         android:textSize="30sp"
-        android:text="@string/game_header" />
+        android:text="@string/game_header" /-->
 
     <FrameLayout
         android:id="@+id/board_container"

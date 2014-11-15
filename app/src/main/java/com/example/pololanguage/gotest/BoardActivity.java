@@ -27,6 +27,18 @@ public class BoardActivity extends Activity {
     }
   }
 
+  @Override
+  protected void onStop() {
+    super.onStop();
+    // TODO: save board state to disk
+  }
+
+  @Override
+  protected void onStart() {
+    super.onStart();
+    // TODO: check for a saved game state - reload if found
+  }
+
   public void undo(View view) {
     if (board != null) board.undo();
   }

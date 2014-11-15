@@ -24,8 +24,8 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
   private int[] yCoords;
   private boolean firstTouch = true;
   private StoneColor currentColor = StoneColor.BLACK;
-  private ArrayList<BoxCoords> moveList;
-  private HashMap<BoxCoords, Stone> stoneMap;
+  private ArrayList<BoxCoords> moves = new ArrayList<BoxCoords>();
+  private HashMap<BoxCoords, Stone> stoneMap = new HashMap<BoxCoords, Stone>();
   private RelativeLayout container;
   private Stone cursor;
   private Box box;
@@ -41,7 +41,6 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
 
   protected static BoardFragment newInstance(int boardSize, int handicap) {
     BoardFragment frag = new BoardFragment();
-    //frag.setRetainInstance(true); // need to move to onCreate() ?
     frag.boardSize = boardSize;
     frag.handicap = handicap;
     return frag;
@@ -244,16 +243,19 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
     private void setCoords(int x, int y) {
       coords.x = x;
       coords.y = y;
+      RelativeLayout.LayoutParams boxParams =
+              (RelativeLayout.LayoutParams) getLayoutParams();
+      boxParams.leftMargin = xCoords[x];
+      boxParams.topMargin = yCoords[y];
+      setLayoutParams(boxParams);
     }
 
     private void snapToGrid(int x, int y) {
-      RelativeLayout.LayoutParams boxParams =
-              (RelativeLayout.LayoutParams) getLayoutParams();
       BoxCoords newBoxCoords = getNearestGridCoords(x, y);
-      boxParams.leftMargin = xCoords[newBoxCoords.x];
-      boxParams.topMargin = yCoords[newBoxCoords.y];
+      // TODO:
+      // check if space is occupied by a stone in stoneMap
+      // if so, return;
       setCoords(newBoxCoords.x, newBoxCoords.y);
-      setLayoutParams(boxParams);
     }
   }
 
@@ -261,18 +263,18 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
     @Override
     public void onClick(View view) {
       // TODO:
-      // NOT in this method:
-      //    private class Box extends View - needs to hold its own BoxCoords
-      // check if space is occupied by a stone in stoneMap
-      // insert <box's BoxCoords, new Stone(box's actual coords, currentColor)> in stoneMap
-      // insert box's BoxCoords in moveList
-      // container.addView(new stone from two steps above);
-      // toggle cursor color
-      // hide cursor and box
-      // NOT in this method:
-      //    move creation of cursor and box back to onCreateView
-      //    addCursor only toggles visibility and sets initial location off screen
-      // firstTouch = true;
+      placeStone();
+      currentColor = currentColor.getOther();
+      firstTouch = true;
+      container.removeView(cursor);
+      container.removeView(box);
+    }
+
+    void placeStone() {
+      BoxCoords coords = box.getCoords();
+      stoneMap.put(coords, new Stone(xCoords[coords.x],
+                                     yCoords[coords.y], currentColor));
+      moves.add(coords);
     }
   }
 }

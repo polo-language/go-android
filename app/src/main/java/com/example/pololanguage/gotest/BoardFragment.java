@@ -28,7 +28,7 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
   private HashMap<BoxCoords, Stone> stoneMap;
   private RelativeLayout container;
   private Stone cursor;
-  private View box;
+  private Box box;
 
   private static final float NINE_MARGINMODIFIER = (float)10/615;
   private static final float NINE_STONEMODIFIER = (float)65/615;
@@ -36,7 +36,8 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
   private static final float THIRTEEN_STONEMODIFIER = (float)44/615;
   private static final float NINETEEN_MARGINMODIFIER = (float)20/615;
   private static final float NINETEEN_STONEMODIFIER = (float)29/615;
-  private static final int PADDING = 2; // should be relative as well
+  // TODO: use padding as view attribute instead
+  private static final int PADDING = 2;
 
   protected static BoardFragment newInstance(int boardSize, int handicap) {
     BoardFragment frag = new BoardFragment();
@@ -120,25 +121,16 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
     final int X = (int) event.getX();
     final int Y = (int) event.getY();
     int newX, newY;
+
     if (firstTouch) { addCursor(X, Y); }
+
     switch (event.getActionMasked()) {
       case MotionEvent.ACTION_DOWN: // intentional fall-through
       case MotionEvent.ACTION_MOVE:
-        RelativeLayout.LayoutParams layoutParams =
-                (RelativeLayout.LayoutParams) cursor.getLayoutParams();
         newX = X - stoneWidth/2;
         newY = Y - stoneWidth/2;
-        layoutParams.leftMargin = newX;
-        layoutParams.topMargin = newY;
-        layoutParams.rightMargin = -250;
-        layoutParams.bottomMargin = -250;
-        cursor.setLayoutParams(layoutParams);
-        RelativeLayout.LayoutParams boxParams =
-                (RelativeLayout.LayoutParams) box.getLayoutParams();
-        BoxCoords newBoxCoords = getNearestBox(newX, newY);
-        boxParams.leftMargin = xCoords[newBoxCoords.x];
-        boxParams.topMargin = yCoords[newBoxCoords.y];
-        box.setLayoutParams(boxParams);
+        cursor.move(newX, newY);
+        box.snapToGrid(newX, newY);
         break;
     }
     return true;
@@ -148,17 +140,11 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
     cursor = new Stone(-200, -200, currentColor);
     cursor.setAlpha(0.7f);
 
-    RelativeLayout.LayoutParams boxParams =
-            new RelativeLayout.LayoutParams(stoneWidth, stoneWidth);
-    box = new View(getActivity());
-    box.setBackgroundResource(R.drawable.box);
-    box.setLayoutParams(boxParams);
-    box.setOnClickListener(new CursorListener());
-    container.addView(box);
+    box = new Box(-200, -200);
     firstTouch = false;
   }
 
-  private BoxCoords getNearestBox(int x, int y) {
+  private BoxCoords getNearestGridCoords(int x, int y) {
     int minX = Integer.MAX_VALUE;
     int minY = Integer.MAX_VALUE;
     int argminX = 0;
@@ -222,6 +208,52 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
     void toggleColor() {
       color = color.getOther();
       setBackgroundResource(color.getResource());
+    }
+
+    private void move(int x, int y) {
+      RelativeLayout.LayoutParams layoutParams =
+              (RelativeLayout.LayoutParams) getLayoutParams();
+      layoutParams.leftMargin = x;
+      layoutParams.topMargin = y;
+      layoutParams.rightMargin = -250;
+      layoutParams.bottomMargin = -250;
+      setLayoutParams(layoutParams);
+    }
+  }
+
+  private class Box extends View {
+    BoxCoords coords;
+
+    Box(int x, int y) {
+      super(BoardFragment.this.getActivity());
+      coords = new BoxCoords(x, y);
+      RelativeLayout.LayoutParams boxParams =
+              new RelativeLayout.LayoutParams(stoneWidth, stoneWidth);
+      boxParams.leftMargin = x;
+      boxParams.topMargin = y;
+      setLayoutParams(boxParams);
+      setBackgroundResource(R.drawable.box);
+      setOnClickListener(new CursorListener());
+      container.addView(this);
+    }
+
+    BoxCoords getCoords() {
+      return coords;
+    }
+
+    private void setCoords(int x, int y) {
+      coords.x = x;
+      coords.y = y;
+    }
+
+    private void snapToGrid(int x, int y) {
+      RelativeLayout.LayoutParams boxParams =
+              (RelativeLayout.LayoutParams) getLayoutParams();
+      BoxCoords newBoxCoords = getNearestGridCoords(x, y);
+      boxParams.leftMargin = xCoords[newBoxCoords.x];
+      boxParams.topMargin = yCoords[newBoxCoords.y];
+      setCoords(newBoxCoords.x, newBoxCoords.y);
+      setLayoutParams(boxParams);
     }
   }
 

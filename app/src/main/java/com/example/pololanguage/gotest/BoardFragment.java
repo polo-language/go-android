@@ -13,7 +13,7 @@ import android.widget.RelativeLayout;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class BoardFragment extends Fragment {
+public class BoardFragment extends Fragment implements View.OnTouchListener {
   private int boardSize;
   private int handicap;
   private int boardWidth;
@@ -23,10 +23,12 @@ public class BoardFragment extends Fragment {
   private int boardImage;
   private int[] xCoords;
   private int[] yCoords;
+  private boolean firstTouch = true;
   private ArrayList<Coordinate> moveOrder;
   private HashMap<Coordinate, Stone> stoneMap;
-  private Stone cursor;
   private RelativeLayout container;
+  private Stone cursor;
+  private View box;
 
   private static final float NINE_MARGINMODIFIER = (float)10/615;
   private static final float NINE_STONEMODIFIER = (float)65/615;
@@ -101,21 +103,59 @@ public class BoardFragment extends Fragment {
     boardContainer.setLayoutParams(layoutParams);
     boardContainer.setBackgroundResource(boardImage);
     container = (RelativeLayout)getActivity().findViewById(R.id.board_rel_layout);
+    container.setOnTouchListener(this);
 
     for(int i = 0; i < boardSize; ++i) {
       for(int j = 0; j < boardSize; ++j) {
-        StoneColor color = ((boardSize*i + j) % 2 == 0)? StoneColor.BLACK : StoneColor.WHITE;
+        StoneColor color = ((boardSize*i + j) % 2 == 0)?
+                StoneColor.BLACK : StoneColor.WHITE;
         // TEST: fill board with stones
         new Stone(xCoords[i], yCoords[i], color);
       }
     }
-
-    cursor = new Stone(200, 100, StoneColor.BLACK);
-    cursor.setAlpha(0.7f);
-    CursorListener cursorListener = new CursorListener();
-    cursor.setOnTouchListener(cursorListener);
-    cursor.setOnLongClickListener(cursorListener);
   }
+
+  @Override
+  public boolean onTouch(View view, MotionEvent event) {
+    final int X = (int) event.getX();
+    final int Y = (int) event.getY();
+    if (firstTouch) { addCursor(X, Y); }
+    switch (event.getActionMasked()) {
+      case MotionEvent.ACTION_DOWN: // intentional fall-through
+      case MotionEvent.ACTION_MOVE:
+        RelativeLayout.LayoutParams layoutParams =
+                (RelativeLayout.LayoutParams) cursor.getLayoutParams();
+        layoutParams.leftMargin = X - stoneWidth/2;
+        layoutParams.topMargin = Y - stoneWidth/2;
+        layoutParams.rightMargin = -250;
+        layoutParams.bottomMargin = -250;
+        cursor.setLayoutParams(layoutParams);
+        break;
+    }
+    return true;
+  }
+
+  private void addCursor(int x, int y) {
+    cursor = new Stone(-200, -100, StoneColor.BLACK);
+    cursor.setAlpha(0.7f);
+    cursor.setOnClickListener(new CursorListener());
+
+    RelativeLayout.LayoutParams boxLayout =
+            new RelativeLayout.LayoutParams(stoneWidth, stoneWidth);
+    boxLayout.leftMargin = x - stoneWidth/2;
+    boxLayout.topMargin = y - stoneWidth/2;
+    box = new View(getActivity());
+    box.setLayoutParams(boxLayout);
+    box.setBackgroundResource(R.drawable.box);
+    container.addView(box);
+    firstTouch = false;
+  }
+
+  private Coordinate getNearestBox(int x, int y) {
+    return new Coordinate();
+  }
+
+  // INNER CLASSES:
 
   enum StoneColor {
     BLACK (R.drawable.stone_black_55x55),
@@ -131,18 +171,17 @@ public class BoardFragment extends Fragment {
   }
 
   private class Coordinate {
-    int x;
-    int y;
+    int x, y;
   }
 
   private class Stone extends View {
-    int x;
-    int y;
+    int x, y;
     StoneColor color;
 
     Stone(int x, int y, StoneColor color) {
       super(BoardFragment.this.getActivity());
-      RelativeLayout.LayoutParams layout = new RelativeLayout.LayoutParams(stoneWidth, stoneWidth);
+      RelativeLayout.LayoutParams layout =
+              new RelativeLayout.LayoutParams(stoneWidth, stoneWidth);
       this.x = x;
       this.y = y;
       this.color = color;
@@ -159,38 +198,10 @@ public class BoardFragment extends Fragment {
     }
   }
 
-  private class CursorListener implements View.OnTouchListener, View.OnLongClickListener {
-    private int xDelta;
-    private int yDelta;
-
+  private static class CursorListener implements View.OnClickListener {
     @Override
-    public boolean onTouch(View view, MotionEvent event) {
-      final int X = (int) event.getRawX();
-      final int Y = (int) event.getRawY();
-      switch (event.getActionMasked()) {
-        case MotionEvent.ACTION_DOWN:
-          RelativeLayout.LayoutParams lParams =
-                  (RelativeLayout.LayoutParams) view.getLayoutParams();
-          xDelta = X - lParams.leftMargin;
-          yDelta = Y - lParams.topMargin;
-          break;
-        case MotionEvent.ACTION_MOVE:
-          RelativeLayout.LayoutParams layoutParams =
-                  (RelativeLayout.LayoutParams) view.getLayoutParams();
-          layoutParams.leftMargin = X - xDelta;
-          layoutParams.topMargin = Y - yDelta;
-          layoutParams.rightMargin = -250;
-          layoutParams.bottomMargin = -250;
-          view.setLayoutParams(layoutParams);
-          break;
-      }
-      return false;
-    }
-
-    @Override
-    public boolean onLongClick(View view) {
-      ((Stone) view).toggleColor();
-      return true;
+    public void onClick(View view) {
+      // TODO:
     }
   }
 }

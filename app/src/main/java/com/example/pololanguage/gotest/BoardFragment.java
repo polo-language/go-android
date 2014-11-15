@@ -23,7 +23,8 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
   private int[] xCoords;
   private int[] yCoords;
   private boolean firstTouch = true;
-  private ArrayList<BoxCoords> moveOrder;
+  private StoneColor currentColor = StoneColor.BLACK;
+  private ArrayList<BoxCoords> moveList;
   private HashMap<BoxCoords, Stone> stoneMap;
   private RelativeLayout container;
   private Stone cursor;
@@ -144,7 +145,7 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
   }
 
   private void addCursor(int x, int y) {
-    cursor = new Stone(-200, -100, StoneColor.BLACK);
+    cursor = new Stone(-200, -200, currentColor);
     cursor.setAlpha(0.7f);
 
     RelativeLayout.LayoutParams boxParams =
@@ -224,10 +225,22 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
     }
   }
 
-  private static class CursorListener implements View.OnClickListener {
+  private class CursorListener implements View.OnClickListener {
     @Override
     public void onClick(View view) {
       // TODO:
+      // NOT in this method:
+      //    private class Box extends View - needs to hold its own BoxCoords
+      // check if space is occupied by a stone in stoneMap
+      // insert <box's BoxCoords, new Stone(box's actual coords, currentColor)> in stoneMap
+      // insert box's BoxCoords in moveList
+      // container.addView(new stone from two steps above);
+      // toggle cursor color
+      // hide cursor and box
+      // NOT in this method:
+      //    move creation of cursor and box back to onCreateView
+      //    addCursor only toggles visibility and sets initial location off screen
+      // firstTouch = true;
     }
   }
 }

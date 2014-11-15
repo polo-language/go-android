@@ -1,7 +1,6 @@
 package com.example.pololanguage.gotest;
 
 import android.app.Fragment;
-import android.content.Context;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -24,8 +23,8 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
   private int[] xCoords;
   private int[] yCoords;
   private boolean firstTouch = true;
-  private ArrayList<Coordinate> moveOrder;
-  private HashMap<Coordinate, Stone> stoneMap;
+  private ArrayList<BoxCoords> moveOrder;
+  private HashMap<BoxCoords, Stone> stoneMap;
   private RelativeLayout container;
   private Stone cursor;
   private View box;
@@ -119,17 +118,26 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
   public boolean onTouch(View view, MotionEvent event) {
     final int X = (int) event.getX();
     final int Y = (int) event.getY();
+    int newX, newY;
     if (firstTouch) { addCursor(X, Y); }
     switch (event.getActionMasked()) {
       case MotionEvent.ACTION_DOWN: // intentional fall-through
       case MotionEvent.ACTION_MOVE:
         RelativeLayout.LayoutParams layoutParams =
                 (RelativeLayout.LayoutParams) cursor.getLayoutParams();
-        layoutParams.leftMargin = X - stoneWidth/2;
-        layoutParams.topMargin = Y - stoneWidth/2;
+        newX = X - stoneWidth/2;
+        newY = Y - stoneWidth/2;
+        layoutParams.leftMargin = newX;
+        layoutParams.topMargin = newY;
         layoutParams.rightMargin = -250;
         layoutParams.bottomMargin = -250;
         cursor.setLayoutParams(layoutParams);
+        RelativeLayout.LayoutParams boxParams =
+                (RelativeLayout.LayoutParams) box.getLayoutParams();
+        BoxCoords newBoxCoords = getNearestBox(newX, newY);
+        boxParams.leftMargin = xCoords[newBoxCoords.x];
+        boxParams.topMargin = yCoords[newBoxCoords.y];
+        box.setLayoutParams(boxParams);
         break;
     }
     return true;
@@ -138,21 +146,35 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
   private void addCursor(int x, int y) {
     cursor = new Stone(-200, -100, StoneColor.BLACK);
     cursor.setAlpha(0.7f);
-    cursor.setOnClickListener(new CursorListener());
 
-    RelativeLayout.LayoutParams boxLayout =
+    RelativeLayout.LayoutParams boxParams =
             new RelativeLayout.LayoutParams(stoneWidth, stoneWidth);
-    boxLayout.leftMargin = x - stoneWidth/2;
-    boxLayout.topMargin = y - stoneWidth/2;
     box = new View(getActivity());
-    box.setLayoutParams(boxLayout);
     box.setBackgroundResource(R.drawable.box);
+    box.setLayoutParams(boxParams);
+    box.setOnClickListener(new CursorListener());
     container.addView(box);
     firstTouch = false;
   }
 
-  private Coordinate getNearestBox(int x, int y) {
-    return new Coordinate();
+  private BoxCoords getNearestBox(int x, int y) {
+    int minX = Integer.MAX_VALUE;
+    int minY = Integer.MAX_VALUE;
+    int argminX = 0;
+    int argminY = 0;
+    for (int i = 0; i < xCoords.length; ++i) {
+      int diffX = Math.abs(xCoords[i] - x);
+      int diffY = Math.abs(yCoords[i] - y);
+      if (diffX < minX) {
+        minX = diffX;
+        argminX = i;
+      }
+      if (diffY < minY) {
+        minY = diffY;
+        argminY = i;
+      }
+    }
+    return new BoxCoords(argminX, argminY);
   }
 
   // INNER CLASSES:
@@ -170,8 +192,12 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
     }
   }
 
-  private class Coordinate {
+  private class BoxCoords {
     int x, y;
+    BoxCoords(int x, int y) {
+      this.x = x;
+      this.y = y;
+    }
   }
 
   private class Stone extends View {

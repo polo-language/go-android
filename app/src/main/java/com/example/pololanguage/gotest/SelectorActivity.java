@@ -14,7 +14,7 @@ public class SelectorActivity extends Activity {
   static final int DEFAULT_HANDICAP = 0;      // default in spinner
   private int boardSize = DEFAULT_BOARD_SIZE;
   private int handicap = DEFAULT_HANDICAP;
-  private static Integer[] handicaps = {0, 1, 2};
+  private static Integer[] handicaps = {0, 1, 2, 3, 4, 5};
 
   @Override
   public void onCreate(Bundle icicle) {
@@ -40,7 +40,7 @@ public class SelectorActivity extends Activity {
   }
 
   public void onBoardSizeRadioClicked(View view) {
-    boolean checked = ((RadioButton) view).isChecked();
+    //boolean checked = ((RadioButton) view).isChecked();
     switch (view.getId()) {
       case R.id.board_size_radio_9:
         boardSize = 9;

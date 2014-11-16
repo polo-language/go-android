@@ -29,7 +29,7 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
   private StoneColor currentColor = StoneColor.BLACK;
   private ArrayList<BoxCoords> moves = new ArrayList<BoxCoords>();
   private Map<BoxCoords, Stone> stoneMap = new HashMap<BoxCoords, Stone>();
-  private RelativeLayout container;
+  private RelativeLayout board;
   private Stone cursor;
   private Box box;
 
@@ -39,6 +39,10 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
   private static final float THIRTEEN_STONEMODIFIER = (float)44/615;
   private static final float NINETEEN_MARGINMODIFIER = (float)20/615;
   private static final float NINETEEN_STONEMODIFIER = (float)29/615;
+
+  private static final BoxCoords[] NINE_HANDICAPS = {new BoxCoords(6, 2), new BoxCoords(2, 6), new BoxCoords(6, 6), new BoxCoords(2, 2), new BoxCoords(4, 4)};
+  private static final BoxCoords[] THIRTEEN_HANDICAPS = {new BoxCoords(9, 3), new BoxCoords(3, 9), new BoxCoords(9, 9), new BoxCoords(3, 3), new BoxCoords(6, 6)};
+  private static final BoxCoords[] NINETEEN_HANDICAPS = {new BoxCoords(15, 3), new BoxCoords(3, 15), new BoxCoords(15, 15), new BoxCoords(3, 3), new BoxCoords(9, 9)};
   // TODO: use padding as view attribute instead
   private static final int PADDING = 2;
 
@@ -57,6 +61,11 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
             .getDisplayMetrics();
     boardWidth = Math.min(displayMetrics.widthPixels,
             displayMetrics.heightPixels);
+    handleBoardSize();
+    setCoordinateArrays();
+  }
+
+  private void handleBoardSize() {
     switch (boardSize) {
       case 9:
         stoneWidth = Math.round(boardWidth * NINE_STONEMODIFIER);
@@ -77,9 +86,8 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
         boardImage = R.drawable.board_19x19;
         break;
       default:
-        Log.e("Board#onCreateView", "Incorrect board size (not 9, 13, or 19).");
+        Log.e("Board#handleBoardSize", "Incorrect board size (not 9, 13, or 19).");
     }
-    setCoordinateArrays();
   }
 
   private void setCoordinateArrays() {
@@ -99,14 +107,52 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
 
   @Override
   public void onViewCreated(View view, Bundle savedInstanceState) {
+    layoutBoard();
+    addHandicapStones();
+  }
+
+  private void layoutBoard() {
     View boardContainer = getActivity().findViewById(R.id.board_container);
     RelativeLayout.LayoutParams layoutParams =
             new RelativeLayout.LayoutParams(boardWidth, boardWidth);
     layoutParams.addRule(RelativeLayout.CENTER_VERTICAL);
     boardContainer.setLayoutParams(layoutParams);
     boardContainer.setBackgroundResource(boardImage);
-    container = (RelativeLayout)getActivity().findViewById(R.id.board_rel_layout);
-    container.setOnTouchListener(this);
+    board = (RelativeLayout)getActivity().findViewById(R.id.board_rel_layout);
+    board.setOnTouchListener(this);
+  }
+
+  private void addHandicapStones() {
+    if (handicap == 0) { return; }
+
+    BoxCoords[] handicaps;
+    switch(boardSize) {
+      case 9:
+        handicaps = NINE_HANDICAPS;
+        break;
+      case 13:
+        handicaps =  THIRTEEN_HANDICAPS;
+        break;
+      case 19:
+        handicaps = NINETEEN_HANDICAPS;
+        break;
+      default: // shouldn't get here
+        return;
+    }
+
+    for (int i = 0; i < handicap; ++i) {
+      placeStone(handicaps[i]);
+    }
+  }
+
+  private void placeStoneAtBoxCoords() {
+    placeStone(box.getCoords());
+  }
+
+  private void placeStone(BoxCoords coords) {
+    stoneMap.put(coords, new Stone(xCoords[coords.x],
+            yCoords[coords.y], currentColor));
+    moves.add(coords);
   }
 
   @Override
@@ -115,7 +161,7 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
     final int Y = (int) event.getY();
     int newX, newY;
 
-    if (firstTouch) { addCursor(X, Y); }
+    if (firstTouch) { addCursor(); }
 
     switch (event.getActionMasked()) {
       case MotionEvent.ACTION_DOWN: // intentional fall-through
@@ -129,7 +175,7 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
     return true;
   }
 
-  private void addCursor(int x, int y) {
+  private void addCursor() {
     cursor = new Stone(-200, -200, currentColor);
     cursor.setAlpha(0.7f);
 
@@ -138,8 +184,8 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
   }
 
   private void removeCursor() {
-    if (cursor != null) container.removeView(cursor);
-    if (box != null) container.removeView(box);
+    if (cursor != null) board.removeView(cursor);
+    if (box != null) board.removeView(box);
     firstTouch = true;
   }
 
@@ -173,7 +219,7 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
     }
     BoxCoords lastMove = moves.remove(moves.size() - 1);
     Stone lastStone = stoneMap.remove(lastMove);
-    container.removeView(lastStone);
+    board.removeView(lastStone);
     Toast.makeText(getActivity(),
             lastStone.color == StoneColor.BLACK ?
                     R.string.undo_black : R.string.undo_white,
@@ -196,18 +242,18 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
 
   public void endGame() {
     removeCursor();
-    container.setOnTouchListener(null);
-    container.setClickable(false);
+    board.setOnTouchListener(null);
+    board.setClickable(false);
     getActivity().findViewById(R.id.undo_button).setEnabled(false);
     getActivity().findViewById(R.id.pass_button).setEnabled(false);
     getActivity().findViewById(R.id.game_over).setVisibility(View.VISIBLE);
   }
 
   public void reset() {
-    container.removeAllViews();
+    board.removeAllViews();
     stoneMap.clear();
     moves.clear();
-    container.setOnTouchListener(this);
+    board.setOnTouchListener(this);
     getActivity().findViewById(R.id.undo_button).setEnabled(true);
     getActivity().findViewById(R.id.pass_button).setEnabled(true);
     getActivity().findViewById(R.id.game_over).setVisibility(View.INVISIBLE);
@@ -232,7 +278,7 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
     }
   }
 
-  private class BoxCoords {
+  private static class BoxCoords {
     int x, y;
 
     BoxCoords(int x, int y) {
@@ -242,15 +288,12 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
 
     @Override
     public boolean equals(Object other) {
-      if (other == null || this.getClass() != other.getClass())
-        return false;
-      return (x == ((BoxCoords)other).x && y == ((BoxCoords)other).y);
+      return !(other == null || this.getClass() != other.getClass())
+              && (x == ((BoxCoords)other).x && y == ((BoxCoords)other).y);
     }
 
     @Override
-    public int hashCode() {
-      return ((Integer) (x + boardSize*y)).hashCode();
-    }
+    public int hashCode() { return ((Integer) (x + 19*y)).hashCode(); }
   }
 
   private class Stone extends View {
@@ -259,6 +302,15 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
 
     Stone(int x, int y, StoneColor color) {
       super(BoardFragment.this.getActivity());
+      setNewStoneValues(x, y, color);
+    }
+
+    Stone(BoxCoords coords, StoneColor color) {
+      super(BoardFragment.this.getActivity());
+      setNewStoneValues(xCoords[coords.x], yCoords[coords.y], color);
+    }
+
+    private void setNewStoneValues(int x, int y, StoneColor color) {
       RelativeLayout.LayoutParams layout =
               new RelativeLayout.LayoutParams(stoneWidth, stoneWidth);
       this.x = x;
@@ -268,7 +320,7 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
       layout.topMargin = y;
       setLayoutParams(layout);
       setBackgroundResource(color.getResource());
-      container.addView(this);
+      board.addView(this);
     }
 
     private void move(int x, int y) {
@@ -295,7 +347,7 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
       setLayoutParams(boxParams);
       setBackgroundResource(R.drawable.box);
       setOnClickListener(new CursorListener());
-      container.addView(this);
+      board.addView(this);
     }
 
     BoxCoords getCoords() {
@@ -324,17 +376,10 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
   private class CursorListener implements View.OnClickListener {
     @Override
     public void onClick(View view) {
-      placeStone();
+      placeStoneAtBoxCoords();
       removeCursor();
       currentColor = currentColor.getOther();
       firstPass = false;
-    }
-
-    void placeStone() {
-      BoxCoords coords = box.getCoords();
-      stoneMap.put(coords, new Stone(xCoords[coords.x],
-                                     yCoords[coords.y], currentColor));
-      moves.add(coords);
     }
   }
 }

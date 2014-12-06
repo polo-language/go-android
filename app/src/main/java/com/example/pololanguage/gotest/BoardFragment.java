@@ -33,18 +33,18 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
   private Stone cursor;
   private Box box;
 
-  private static final float NINE_MARGINMODIFIER = (float)10/615;
-  private static final float NINE_STONEMODIFIER = (float)65/615;
-  private static final float THIRTEEN_MARGINMODIFIER = (float)10/615;
-  private static final float THIRTEEN_STONEMODIFIER = (float)44/615;
-  private static final float NINETEEN_MARGINMODIFIER = (float)20/615;
-  private static final float NINETEEN_STONEMODIFIER = (float)29/615;
+  private static final float NINE_MARGINMODIFIER = (float)8/615;
+  private static final float NINE_STONEMODIFIER = (float)67/615;
+  private static final float THIRTEEN_MARGINMODIFIER = (float)8/615;
+  private static final float THIRTEEN_STONEMODIFIER = (float)46/615;
+  private static final float NINETEEN_MARGINMODIFIER = (float)18/615;
+  private static final float NINETEEN_STONEMODIFIER = (float)31/615;
 
   private static final BoxCoords[] NINE_HANDICAPS = {new BoxCoords(6, 2), new BoxCoords(2, 6), new BoxCoords(6, 6), new BoxCoords(2, 2), new BoxCoords(4, 4)};
   private static final BoxCoords[] THIRTEEN_HANDICAPS = {new BoxCoords(9, 3), new BoxCoords(3, 9), new BoxCoords(9, 9), new BoxCoords(3, 3), new BoxCoords(6, 6)};
   private static final BoxCoords[] NINETEEN_HANDICAPS = {new BoxCoords(15, 3), new BoxCoords(3, 15), new BoxCoords(15, 15), new BoxCoords(3, 3), new BoxCoords(9, 9)};
   // TODO: use padding as view attribute instead
-  private static final int PADDING = 2;
+  //private static final int PADDING = 2;
 
   protected static BoardFragment newInstance(int boardSize, int handicap) {
     BoardFragment frag = new BoardFragment();
@@ -82,7 +82,7 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
       case 19:
         stoneWidth = Math.round(boardWidth * NINETEEN_STONEMODIFIER);
         marginLeft = Math.round(boardWidth * NINETEEN_MARGINMODIFIER);
-        marginTop = marginLeft - 5;
+        marginTop = marginLeft - 15;
         boardImage = R.drawable.board_19x19;
         break;
       default:
@@ -94,8 +94,8 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
     xCoords = new int[boardSize];
     yCoords = new int[boardSize];
     for(int i = 0; i < boardSize; ++i) {
-      xCoords[i] = marginLeft + i*(PADDING + stoneWidth);
-      yCoords[i] = marginTop + i*(PADDING + stoneWidth);
+      xCoords[i] = marginLeft + i*stoneWidth;
+      yCoords[i] = marginTop + i*stoneWidth;
     }
   }
 
@@ -109,6 +109,15 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
   public void onViewCreated(View view, Bundle savedInstanceState) {
     layoutBoard();
     addHandicapStones();
+    testStoneLayout();
+  }
+
+  public void testStoneLayout() {
+    for (int i = 0; i < boardSize; ++i) {
+      for (int j = 0; j < boardSize; ++j) {
+        placeStone(new BoxCoords(i, j));
+      }
+    }
   }
 
   private void layoutBoard() {
@@ -143,6 +152,7 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
     for (int i = 0; i < handicap; ++i) {
       placeStone(handicaps[i]);
     }
+    currentColor = StoneColor.WHITE;
   }
 
   private void placeStoneAtBoxCoords() {
@@ -150,8 +160,7 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
   }
 
   private void placeStone(BoxCoords coords) {
-    stoneMap.put(coords, new Stone(xCoords[coords.x],
-            yCoords[coords.y], currentColor));
+    stoneMap.put(coords, new Stone(coords, currentColor));
     moves.add(coords);
   }
 
@@ -263,8 +272,8 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
   //////////////////////////////////
   // INNER CLASSES:
   enum StoneColor {
-    BLACK (R.drawable.stone_black_55x55),
-    WHITE (R.drawable.stone_white_55x55);
+    BLACK (R.drawable.stone_black),
+    WHITE (R.drawable.stone_white);
 
     int resource;
 
@@ -320,6 +329,7 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
       layout.topMargin = y;
       setLayoutParams(layout);
       setBackgroundResource(color.getResource());
+      //setPadding(PADDING, PADDING, PADDING, PADDING);
       board.addView(this);
     }
 

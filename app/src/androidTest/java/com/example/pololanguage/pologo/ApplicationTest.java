@@ -1,4 +1,4 @@
-package com.example.pololanguage.gotest;
+package com.example.pololanguage.pologo;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

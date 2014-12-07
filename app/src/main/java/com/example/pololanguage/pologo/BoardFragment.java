@@ -1,4 +1,4 @@
-package com.example.pololanguage.gotest;
+package com.example.pololanguage.pologo;
 
 import android.app.Fragment;
 import android.os.Bundle;

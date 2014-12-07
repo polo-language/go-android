@@ -1,4 +1,4 @@
-package com.example.pololanguage.gotest;
+package com.example.pololanguage.pologo;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.RadioButton;
 import android.widget.Spinner;
 
 public class SelectorActivity extends Activity {

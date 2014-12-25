@@ -1,6 +1,7 @@
 package com.pololanguage.pologo;
 
 import android.app.Fragment;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -267,6 +268,10 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
     getActivity().findViewById(R.id.pass_button).setEnabled(true);
     getActivity().findViewById(R.id.game_over).setVisibility(View.INVISIBLE);
     Toast.makeText(getActivity(), R.string.reset, Toast.LENGTH_LONG).show();
+    ((BoardActivity)getActivity()).saveBoardToFile();
+    // Restart selector activity
+    Intent selector = new Intent(getActivity(), SelectorActivity.class);
+    startActivity(selector);
   }
 
   //////////////////////////////////

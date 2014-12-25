@@ -4,11 +4,8 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOError;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 
@@ -16,7 +13,7 @@ public class BoardActivity extends Activity {
   public static final String EXTRA_BOARD_SIZE = "board_size";
   public static final String EXTRA_HANDICAP = "handicap";
   private static final String SAVED_BOARD_FILENAME = "saved_board";
-  BoardFragment board;
+  private BoardFragment board;
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
@@ -38,7 +35,12 @@ public class BoardActivity extends Activity {
 
   @Override
   protected void onStop() {
-    // TODO: save board state to disk
+    saveBoardToFile();
+    super.onStop();
+  }
+
+  void saveBoardToFile() {
+    // TODO: verify this is working
     if (board == null) { return; }
 
     String json = board.getJson();
@@ -47,8 +49,6 @@ public class BoardActivity extends Activity {
       saveStringToFile(file, json);
     } catch (IOException ioE) {
       Log.e("onStop: board state not saved", ioE.toString());
-    } finally {
-      super.onStop();
     }
   }
 

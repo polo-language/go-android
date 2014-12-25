@@ -9,7 +9,7 @@
     <string name="game_header">Polo Go</string>
     <string name="undo_button">Undo</string>
     <string name="pass_button">Pass</string>
-    <string name="reset_button">Reset</string>
+    <string name="reset_button">Quit</string>
     <string name="no_moves_to_undo">No moves to undo</string>
     <string name="undo_white">White\'s move undone</string>
     <string name="undo_black">Black\'s move undone</string>
@@ -17,4 +17,7 @@
     <string name="pass_black">Black passes</string>
     <string name="reset">Game reset!</string>
     <string name="game_over">Game over!</string>
+    <string name="cancel">Cancel</string>
+    <string name="new_game">New Game</string>
+    <string name="quit">Save \u0026 Quit</string>
 </resources>

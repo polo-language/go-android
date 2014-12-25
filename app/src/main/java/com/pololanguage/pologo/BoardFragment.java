@@ -1,6 +1,10 @@
 package com.pololanguage.pologo;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.DialogFragment;
 import android.app.Fragment;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
@@ -18,7 +22,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class BoardFragment extends Fragment implements View.OnTouchListener {
+public class BoardFragment extends Fragment
+                           implements View.OnTouchListener {
   private int boardSize;
   private int handicap;
   private int boardWidth;

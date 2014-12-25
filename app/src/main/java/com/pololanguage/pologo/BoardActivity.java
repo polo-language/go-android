@@ -1,6 +1,7 @@
 package com.pololanguage.pologo;
 
 import android.app.Activity;
+import android.app.DialogFragment;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -9,7 +10,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 
-public class BoardActivity extends Activity {
+public class BoardActivity extends Activity
+                           implements  QuitDialogFragment.QuitDialogListener  {
   public static final String EXTRA_BOARD_SIZE = "board_size";
   public static final String EXTRA_HANDICAP = "handicap";
   private static final String SAVED_BOARD_FILENAME = "saved_board";
@@ -69,6 +71,28 @@ public class BoardActivity extends Activity {
     // TODO: check for a saved game state - reload if found
   }
 
+  //////////////////////////////////
+  // Quit dialog implementation
+  public void showNoticeDialog() {
+    DialogFragment dialog = new QuitDialogFragment();
+    dialog.show(getFragmentManager(), "QuitDialogFragment");
+  }
+
+  @Override
+  public void onDialogPositiveClick() {
+    // Close the app; saves state in onDestroy
+    moveTaskToBack(true);
+  }
+
+  @Override
+  public void onDialogNeutralClick() {
+    // "New Game": returns to SelectorActivity
+    board.reset();
+  }
+
+  //////////////////////////////////
+  // Button click handlers
+
   public void undo(View view) {
     if (board != null) board.undo();
   }
@@ -78,6 +102,8 @@ public class BoardActivity extends Activity {
   }
 
   public void reset(View view) {
-    if (board != null) board.reset();
+    if (board != null) {
+      showNoticeDialog();
+    }
   }
 }

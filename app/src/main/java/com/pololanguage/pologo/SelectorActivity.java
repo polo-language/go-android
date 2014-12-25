@@ -1,4 +1,4 @@
-package com.example.pololanguage.pologo;
+package com.pololanguage.pologo;
 
 import android.app.Activity;
 import android.content.Intent;

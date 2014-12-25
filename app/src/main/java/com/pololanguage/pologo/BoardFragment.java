@@ -1,4 +1,4 @@
-package com.example.pololanguage.pologo;
+package com.pololanguage.pologo;
 
 import android.app.Fragment;
 import android.os.Bundle;
@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
+import com.google.gson.Gson;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -27,7 +28,7 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
   private boolean firstTouch = true;
   private boolean firstPass = false;
   private StoneColor currentColor = StoneColor.BLACK;
-  private ArrayList<BoxCoords> moves = new ArrayList<BoxCoords>();
+  ArrayList<BoxCoords> moves = new ArrayList<BoxCoords>();
   private Map<BoxCoords, Stone> stoneMap = new HashMap<BoxCoords, Stone>();
   private RelativeLayout board;
   private Stone cursor;
@@ -43,8 +44,6 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
   private static final BoxCoords[] NINE_HANDICAPS = {new BoxCoords(6, 2), new BoxCoords(2, 6), new BoxCoords(6, 6), new BoxCoords(2, 2), new BoxCoords(4, 4)};
   private static final BoxCoords[] THIRTEEN_HANDICAPS = {new BoxCoords(9, 3), new BoxCoords(3, 9), new BoxCoords(9, 9), new BoxCoords(3, 3), new BoxCoords(6, 6)};
   private static final BoxCoords[] NINETEEN_HANDICAPS = {new BoxCoords(15, 3), new BoxCoords(3, 15), new BoxCoords(15, 15), new BoxCoords(3, 3), new BoxCoords(9, 9)};
-  // TODO: use padding as view attribute instead
-  //private static final int PADDING = 2;
 
   protected static BoardFragment newInstance(int boardSize, int handicap) {
     BoardFragment frag = new BoardFragment();
@@ -109,9 +108,10 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
   public void onViewCreated(View view, Bundle savedInstanceState) {
     layoutBoard();
     addHandicapStones();
-    testStoneLayout();
+    // DEBUG: testStoneLayout();
   }
 
+  // DEBUG:
   public void testStoneLayout() {
     for (int i = 0; i < boardSize; ++i) {
       for (int j = 0; j < boardSize; ++j) {
@@ -270,6 +270,12 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
   }
 
   //////////////////////////////////
+  // SERIALIZATION:
+  String getJson() {
+    return (new Gson()).toJson(moves);
+  }
+
+  //////////////////////////////////
   // INNER CLASSES:
   enum StoneColor {
     BLACK (R.drawable.stone_black),
@@ -329,7 +335,6 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
       layout.topMargin = y;
       setLayoutParams(layout);
       setBackgroundResource(color.getResource());
-      //setPadding(PADDING, PADDING, PADDING, PADDING);
       board.addView(this);
     }
 
@@ -376,9 +381,7 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
 
     private void snapToGrid(int x, int y) {
       BoxCoords newBoxCoords = getNearestGridCoords(x, y);
-
       if (stoneMap.containsKey(newBoxCoords)) { return; }
-
       setCoords(newBoxCoords);
     }
   }

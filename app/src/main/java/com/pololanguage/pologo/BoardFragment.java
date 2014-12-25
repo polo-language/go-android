@@ -186,10 +186,10 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
   }
 
   private void addCursor() {
-    cursor = new Stone(-200, -200, currentColor);
+    cursor = new Stone(null, currentColor);
     cursor.setAlpha(0.7f);
 
-    box = new Box(-200, -200);
+    box = new Box();
     firstTouch = false;
   }
 
@@ -299,9 +299,13 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
   }
 
   private static class BoxCoords {
+    // Holds game position coordinates (i.e. 1-9, 1-13, or 1-19, not pixel offsets)
     int x, y;
 
     BoxCoords(int x, int y) {
+      if (x < -1 || 19 < x || y < -1 || 19 < y) {
+        throw new IndexOutOfBoundsException("Invalid BoxCoords parameters.");
+      }
       this.x = x;
       this.y = y;
     }
@@ -317,25 +321,30 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
   }
 
   private class Stone extends View {
-    int x, y;
+    //int x, y;
+    BoxCoords coords;
     StoneColor color;
 
-    Stone(int x, int y, StoneColor color) {
+    /*Stone(int x, int y, StoneColor color) {
       super(BoardFragment.this.getActivity());
       setNewStoneValues(x, y, color);
-    }
+    }*/
 
     Stone(BoxCoords coords, StoneColor color) {
       super(BoardFragment.this.getActivity());
-      setNewStoneValues(xCoords[coords.x], yCoords[coords.y], color);
+      this.color = color;
+
+      if (coords == null) { // used for cursor only
+        setUpStoneView(-200, -200, color);
+      } else {
+        this.coords = coords;
+        setUpStoneView(xCoords[coords.x], yCoords[coords.y], color);
+      }
     }
 
-    private void setNewStoneValues(int x, int y, StoneColor color) {
+    private void setUpStoneView(int x, int y, StoneColor color) {
       RelativeLayout.LayoutParams layout =
               new RelativeLayout.LayoutParams(stoneWidth, stoneWidth);
-      this.x = x;
-      this.y = y;
-      this.color = color;
       layout.leftMargin = x;
       layout.topMargin = y;
       setLayoutParams(layout);
@@ -357,13 +366,13 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
   private class Box extends View {
     BoxCoords coords;
 
-    Box(int x, int y) {
+    Box() {
       super(BoardFragment.this.getActivity());
-      coords = new BoxCoords(x, y);
+      coords = new BoxCoords(-1, -1);
       RelativeLayout.LayoutParams boxParams =
               new RelativeLayout.LayoutParams(stoneWidth, stoneWidth);
-      boxParams.leftMargin = x;
-      boxParams.topMargin = y;
+      boxParams.leftMargin = -200;
+      boxParams.topMargin = -200;
       setLayoutParams(boxParams);
       setBackgroundResource(R.drawable.box);
       setOnClickListener(new CursorListener());

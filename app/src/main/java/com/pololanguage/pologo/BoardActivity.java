@@ -2,6 +2,7 @@ package com.pololanguage.pologo;
 
 import android.app.Activity;
 import android.app.DialogFragment;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -86,8 +87,11 @@ public class BoardActivity extends Activity
 
   @Override
   public void onDialogNeutralClick() {
-    // "New Game": returns to SelectorActivity
+    // "New Game"
     board.reset();
+    // Restart selector activity
+    Intent selector = new Intent(this, SelectorActivity.class);
+    startActivity(selector);
   }
 
   //////////////////////////////////

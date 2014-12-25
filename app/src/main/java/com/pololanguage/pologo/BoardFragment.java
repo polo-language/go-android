@@ -275,10 +275,6 @@ public class BoardFragment extends Fragment
     getActivity().findViewById(R.id.pass_button).setEnabled(true);
     getActivity().findViewById(R.id.game_over).setVisibility(View.INVISIBLE);
     Toast.makeText(getActivity(), R.string.reset, Toast.LENGTH_LONG).show();
-    //((BoardActivity)getActivity()).saveBoardToFile();
-    // Restart selector activity
-    Intent selector = new Intent(getActivity(), SelectorActivity.class);
-    startActivity(selector);
   }
 
   //////////////////////////////////

@@ -34,9 +34,9 @@ public class BoardActivity extends Activity {
   }
 
   @Override
-  protected void onStop() {
+  protected void onDestroy() {
     saveBoardToFile();
-    super.onStop();
+    super.onDestroy();
   }
 
   void saveBoardToFile() {
@@ -47,6 +47,8 @@ public class BoardActivity extends Activity {
     File file = new File(getFilesDir(), SAVED_BOARD_FILENAME);
     try {
       saveStringToFile(file, json);
+      // DEBUG:
+      Log.i("saved: ", json);
     } catch (IOException ioE) {
       Log.e("onStop: board state not saved", ioE.toString());
     }

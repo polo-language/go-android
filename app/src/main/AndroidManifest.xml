@@ -10,7 +10,8 @@
         <!-- TODO: allow orientation changes here - create portrait layout file -->
 
         <activity
-            android:name="com.pololanguage.pologo.SelectorActivity">
+            android:name="com.pololanguage.pologo.SelectorActivity"
+            android:noHistory="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -19,7 +20,8 @@
         <activity
             android:name="com.pololanguage.pologo.BoardActivity"
             android:screenOrientation="portrait"
-            android:configChanges="keyboardHidden|orientation|screenSize">
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:noHistory="true">
         </activity>
 
     </application>

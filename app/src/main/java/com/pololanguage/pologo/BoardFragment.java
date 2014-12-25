@@ -29,8 +29,8 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
   private boolean firstTouch = true;
   private boolean firstPass = false;
   private StoneColor currentColor = StoneColor.BLACK;
-  ArrayList<BoxCoords> moves = new ArrayList<BoxCoords>();
-  private Map<BoxCoords, Stone> stoneMap = new HashMap<BoxCoords, Stone>();
+  ArrayList<BoxCoords> moves = new ArrayList<>();
+  private Map<BoxCoords, Stone> stoneMap = new HashMap<>();
   private RelativeLayout board;
   private Stone cursor;
   private Box box;
@@ -268,7 +268,7 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
     getActivity().findViewById(R.id.pass_button).setEnabled(true);
     getActivity().findViewById(R.id.game_over).setVisibility(View.INVISIBLE);
     Toast.makeText(getActivity(), R.string.reset, Toast.LENGTH_LONG).show();
-    ((BoardActivity)getActivity()).saveBoardToFile();
+    //((BoardActivity)getActivity()).saveBoardToFile();
     // Restart selector activity
     Intent selector = new Intent(getActivity(), SelectorActivity.class);
     startActivity(selector);

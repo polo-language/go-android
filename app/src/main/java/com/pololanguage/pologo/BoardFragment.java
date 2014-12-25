@@ -14,7 +14,9 @@ import android.widget.Toast;
 import com.google.gson.Gson;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class BoardFragment extends Fragment implements View.OnTouchListener {
   private int boardSize;
@@ -29,8 +31,8 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
   private boolean firstTouch = true;
   private boolean firstPass = false;
   private StoneColor currentColor = StoneColor.BLACK;
-  ArrayList<BoxCoords> moves = new ArrayList<>();
-  private Map<BoxCoords, Stone> stoneMap = new HashMap<>();
+  ArrayList<Stone> stones = new ArrayList<>();
+  private Set<BoxCoords> moves = new HashSet<>();
   private RelativeLayout board;
   private Stone cursor;
   private Box box;
@@ -161,8 +163,8 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
   }
 
   private void placeStone(BoxCoords coords) {
-    stoneMap.put(coords, new Stone(coords, currentColor));
     moves.add(coords);
+    stones.add(new Stone(coords, currentColor));
   }
 
   @Override
@@ -222,13 +224,13 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
   //////////////////////////////////
   // BUTTON onClick LISTENERS
   public void undo() {
-    if (moves.isEmpty()) {
+    if (stones.isEmpty()) {
       Toast.makeText(getActivity(), R.string.no_moves_to_undo, Toast.LENGTH_LONG)
               .show();
       return;
     }
-    BoxCoords lastMove = moves.remove(moves.size() - 1);
-    Stone lastStone = stoneMap.remove(lastMove);
+    Stone lastStone = stones.remove(stones.size() - 1);
+    moves.remove(lastStone.coords);
     board.removeView(lastStone);
     Toast.makeText(getActivity(),
             lastStone.color == StoneColor.BLACK ?
@@ -261,8 +263,8 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
 
   public void reset() {
     board.removeAllViews();
-    stoneMap.clear();
     moves.clear();
+    stones.clear();
     board.setOnTouchListener(this);
     getActivity().findViewById(R.id.undo_button).setEnabled(true);
     getActivity().findViewById(R.id.pass_button).setEnabled(true);
@@ -277,7 +279,16 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
   //////////////////////////////////
   // SERIALIZATION:
   String getJson() {
-    return (new Gson()).toJson(moves);
+    int numMoves = stones.size();
+    StoredMove[] moveArray = new StoredMove[numMoves];
+    Stone stone;
+
+    for (int i = 0; i < numMoves; ++i) {
+      stone = stones.get(i);
+      moveArray[i] = new StoredMove(i, stone.coords.x, stone.coords.y, stone.color);
+    }
+
+    return (new Gson()).toJson(moveArray);
   }
 
   //////////////////////////////////
@@ -295,6 +306,20 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
     StoneColor getOther() {
       if (this == BLACK) return WHITE;
       else return BLACK;
+    }
+  }
+
+  private static class StoredMove {
+    int index;
+    int x;
+    int y;
+    StoneColor color;
+
+    StoredMove(int index, int x, int y, StoneColor color) {
+      this.index = index;
+      this.x = x;
+      this.y = y;
+      this.color = color;
     }
   }
 
@@ -321,14 +346,8 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
   }
 
   private class Stone extends View {
-    //int x, y;
     BoxCoords coords;
     StoneColor color;
-
-    /*Stone(int x, int y, StoneColor color) {
-      super(BoardFragment.this.getActivity());
-      setNewStoneValues(x, y, color);
-    }*/
 
     Stone(BoxCoords coords, StoneColor color) {
       super(BoardFragment.this.getActivity());
@@ -395,7 +414,7 @@ public class BoardFragment extends Fragment implements View.OnTouchListener {
 
     private void snapToGrid(int x, int y) {
       BoxCoords newBoxCoords = getNearestGridCoords(x, y);
-      if (stoneMap.containsKey(newBoxCoords)) { return; }
+      if (moves.contains(newBoxCoords)) { return; }
       setCoords(newBoxCoords);
     }
   }

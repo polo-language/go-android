@@ -15,7 +15,8 @@ public class BoardActivity extends Activity
                            implements  QuitDialogFragment.QuitDialogListener  {
   public static final String EXTRA_BOARD_SIZE = "board_size";
   public static final String EXTRA_HANDICAP = "handicap";
-  private static final String SAVED_BOARD_FILENAME = "saved_board";
+  public static final String EXTRA_SAVED_GAME = "saved_game";
+  static final String SAVED_BOARD_FILENAME = "saved_board";
   private BoardFragment board;
 
   @Override
@@ -25,6 +26,8 @@ public class BoardActivity extends Activity
                                            SelectorActivity.DEFAULT_BOARD_SIZE);
     int handicap = getIntent().getIntExtra(EXTRA_HANDICAP,
                                            SelectorActivity.DEFAULT_HANDICAP);
+    // TODO: get EXTRA_SAVED_GAME if it's not null
+
     setContentView(R.layout.game);
 
     if (findViewById(R.id.board_container) != null) {
@@ -59,7 +62,7 @@ public class BoardActivity extends Activity
 
   private void saveStringToFile(File file, String string) throws IOException {
     FileOutputStream fos = new FileOutputStream(file);
-    OutputStreamWriter writer = new OutputStreamWriter(fos);
+    OutputStreamWriter writer = new OutputStreamWriter(fos, "UTF8");
     writer.write(string);
     writer.flush();
     fos.getFD().sync();
@@ -89,6 +92,7 @@ public class BoardActivity extends Activity
   public void onDialogNeutralClick() {
     // "New Game"
     board.reset();
+    saveBoardToFile();
     // Restart selector activity
     Intent selector = new Intent(this, SelectorActivity.class);
     startActivity(selector);

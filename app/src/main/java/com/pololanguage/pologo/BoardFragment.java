@@ -294,36 +294,6 @@ public class BoardFragment extends Fragment
 
   //////////////////////////////////
   // INNER CLASSES:
-  enum StoneColor {
-    BLACK (R.drawable.stone_black),
-    WHITE (R.drawable.stone_white);
-
-    int resource;
-
-    StoneColor(int resource) { this.resource = resource; }
-
-    int getResource() { return resource; }
-
-    StoneColor getOther() {
-      if (this == BLACK) return WHITE;
-      else return BLACK;
-    }
-  }
-
-  private static class StoredMove {
-    int index;
-    int x;
-    int y;
-    StoneColor color;
-
-    StoredMove(int index, int x, int y, StoneColor color) {
-      this.index = index;
-      this.x = x;
-      this.y = y;
-      this.color = color;
-    }
-  }
-
   private static class BoxCoords {
     // Holds game position coordinates (i.e. 1-9, 1-13, or 1-19, not pixel offsets)
     int x, y;

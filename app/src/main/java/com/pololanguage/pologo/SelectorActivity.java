@@ -3,10 +3,17 @@ package com.pololanguage.pologo;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 public class SelectorActivity extends Activity {
   static final int DEFAULT_BOARD_SIZE = 9;    // default checked radio button
@@ -18,14 +25,55 @@ public class SelectorActivity extends Activity {
   @Override
   public void onCreate(Bundle icicle) {
     super.onCreate(icicle);
+    String savedGameString;
+    File file = new File(getFilesDir(), BoardActivity.SAVED_BOARD_FILENAME);
+
+    try { // This leaks a FileInputStream if it throws...
+      FileInputStream fis = new FileInputStream(file);
+      savedGameString = convertStreamToString(fis);
+      fis.close();
+
+      if (savedGameString.trim().equals("[]")) {
+        loadSelectorView();
+      } else {
+        loadBoard(savedGameString);
+      }
+    } catch (Exception err) {
+      Log.e("SelectorActivity load file: ", err.toString());
+      loadSelectorView();
+    }
+  }
+
+  public static String convertStreamToString(InputStream is) throws IOException {
+    BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+    StringBuilder sb = new StringBuilder();
+    String line;
+    while ((line = reader.readLine()) != null) {
+      sb.append(line).append("\n");
+    }
+    reader.close();
+    return sb.toString();
+  }
+
+  private void loadSelectorView() {
     setContentView(R.layout.selector);
     Spinner spinner = (Spinner)findViewById(R.id.handicap_spinner);
     spinner.setOnItemSelectedListener(new HandicapSpinner());
     ArrayAdapter<Integer> aa = new ArrayAdapter<Integer>(this,
-                            android.R.layout.simple_spinner_item,
-                            handicaps);
+        android.R.layout.simple_spinner_item,
+        handicaps);
     aa.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
     spinner.setAdapter(aa);
+  }
+
+  private void loadBoard(String savedGameString) {
+    Intent boardIntent = new Intent(this, BoardActivity.class);
+    boardIntent.putExtra(BoardActivity.EXTRA_BOARD_SIZE, boardSize);
+    boardIntent.putExtra(BoardActivity.EXTRA_HANDICAP, handicap);
+    if (savedGameString != null) {
+      boardIntent.putExtra(BoardActivity.EXTRA_SAVED_GAME, savedGameString);
+    }
+    startActivity(boardIntent);
   }
 
   public class HandicapSpinner implements AdapterView.OnItemSelectedListener {
@@ -52,10 +100,8 @@ public class SelectorActivity extends Activity {
         break;
     }
   }
+
   public void onGoClicked(View view) {
-    Intent boardIntent = new Intent(this, BoardActivity.class);
-    boardIntent.putExtra(BoardActivity.EXTRA_BOARD_SIZE, boardSize);
-    boardIntent.putExtra(BoardActivity.EXTRA_HANDICAP, handicap);
-    startActivity(boardIntent);
+    loadBoard(null);
   }
 }

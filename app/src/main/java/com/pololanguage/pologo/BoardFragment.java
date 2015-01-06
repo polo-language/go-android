@@ -289,7 +289,7 @@ public class BoardFragment extends Fragment
       moveArray[i] = new StoredMove(i, stone.coords.x, stone.coords.y, stone.color);
     }
 
-    return (new Gson()).toJson(moveArray);
+    return "{\"currentColor\":\"" + currentColor + "\",\"board\":" + (new Gson()).toJson(moveArray) + "}";
   }
 
   //////////////////////////////////

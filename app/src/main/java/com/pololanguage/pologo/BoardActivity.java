@@ -17,6 +17,7 @@ public class BoardActivity extends Activity
   public static final String EXTRA_HANDICAP = "handicap";
   public static final String EXTRA_SAVED_GAME = "saved_game";
   static final String SAVED_BOARD_FILENAME = "saved_board";
+  public static final String NO_SAVE_STRING = "{\"noSave\":true}";
   private BoardFragment board;
 
   @Override
@@ -26,6 +27,7 @@ public class BoardActivity extends Activity
                                            SelectorActivity.DEFAULT_BOARD_SIZE);
     int handicap = getIntent().getIntExtra(EXTRA_HANDICAP,
                                            SelectorActivity.DEFAULT_HANDICAP);
+    String boardJson = getIntent().getStringExtra(EXTRA_SAVED_GAME);
     // TODO: get EXTRA_SAVED_GAME if it's not null
 
     setContentView(R.layout.game);
@@ -41,15 +43,21 @@ public class BoardActivity extends Activity
 
   @Override
   protected void onDestroy() {
-    saveBoardToFile();
+    saveBoardToFile(true);
     super.onDestroy();
   }
 
-  void saveBoardToFile() {
+  void saveBoardToFile(Boolean saveGameState) {
     // TODO: verify this is working
     if (board == null) { return; }
 
-    String json = board.getJson();
+    String json;
+    if (saveGameState) {
+      json = board.getJson();
+      // TODO: test here if board was actually empty (or had only handicap stones) and should use NO_SAVE_STRING anyway
+    } else {
+      json = NO_SAVE_STRING;
+    }
     File file = new File(getFilesDir(), SAVED_BOARD_FILENAME);
     try {
       saveStringToFile(file, json);
@@ -92,7 +100,7 @@ public class BoardActivity extends Activity
   public void onDialogNeutralClick() {
     // "New Game"
     board.reset();
-    saveBoardToFile();
+    saveBoardToFile(false);
     // Restart selector activity
     Intent selector = new Intent(this, SelectorActivity.class);
     startActivity(selector);

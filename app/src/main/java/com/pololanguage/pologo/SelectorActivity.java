@@ -33,7 +33,8 @@ public class SelectorActivity extends Activity {
       savedGameString = convertStreamToString(fis);
       fis.close();
 
-      if (savedGameString.trim().equals("[]")) {
+      // TODO: check value of saved board on first start and loadSelectorView there as well
+      if (savedGameString.trim().equals(BoardActivity.NO_SAVE_STRING)) {
         loadSelectorView();
       } else {
         loadBoard(savedGameString);
@@ -70,7 +71,7 @@ public class SelectorActivity extends Activity {
     Intent boardIntent = new Intent(this, BoardActivity.class);
     boardIntent.putExtra(BoardActivity.EXTRA_BOARD_SIZE, boardSize);
     boardIntent.putExtra(BoardActivity.EXTRA_HANDICAP, handicap);
-    if (savedGameString != null) {
+    if (savedGameString != null) { // TODO: delete this check, should be fine checking in BoardActivity#onCreate() alone
       boardIntent.putExtra(BoardActivity.EXTRA_SAVED_GAME, savedGameString);
     }
     startActivity(boardIntent);

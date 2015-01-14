@@ -35,7 +35,7 @@ public class BoardFragment extends Fragment
   private int[] yCoords;
   private boolean firstTouch = true;
   private boolean firstPass = false;
-  private StoneColor currentColor = StoneColor.BLACK;
+  private StoneColor currentColor; // = StoneColor.BLACK;
   ArrayList<Stone> stones = new ArrayList<>();
   private Set<BoxCoords> moves = new HashSet<>();
   private RelativeLayout board;
@@ -53,10 +53,16 @@ public class BoardFragment extends Fragment
   private static final BoxCoords[] THIRTEEN_HANDICAPS = {new BoxCoords(9, 3), new BoxCoords(3, 9), new BoxCoords(9, 9), new BoxCoords(3, 3), new BoxCoords(6, 6)};
   private static final BoxCoords[] NINETEEN_HANDICAPS = {new BoxCoords(15, 3), new BoxCoords(3, 15), new BoxCoords(15, 15), new BoxCoords(3, 3), new BoxCoords(9, 9)};
 
-  protected static BoardFragment newInstance(int boardSize, int handicap) {
+  protected static BoardFragment newInstance(int boardSize, int handicap, String colorString, String boardString) {
     BoardFragment frag = new BoardFragment();
     frag.boardSize = boardSize;
     frag.handicap = handicap;
+    try {
+      frag.currentColor = StoneColor.valueOf(colorString);
+    } catch (IllegalArgumentException e) {
+      frag.currentColor = StoneColor.BLACK;
+    }
+    // TODO: save boardString somewhere. In onCreate convert it to an array StoredMove[] with gson, then place the moves
     return frag;
   }
 

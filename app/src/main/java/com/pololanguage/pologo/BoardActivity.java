@@ -13,9 +13,7 @@ import java.io.OutputStreamWriter;
 
 public class BoardActivity extends Activity
                            implements  QuitDialogFragment.QuitDialogListener  {
-  public static final String EXTRA_BOARD_SIZE = "board_size";
   public static final String EXTRA_HANDICAP = "handicap";
-  public static final String EXTRA_SAVED_GAME = "saved_game";
   static final String SAVED_BOARD_FILENAME = "saved_board";
   public static final String NO_SAVE_NAME = "noSave";
   public static final String NO_SAVE_JSON = "{\"" + NO_SAVE_NAME + "\":true}";
@@ -28,19 +26,18 @@ public class BoardActivity extends Activity
   @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    int boardSize = getIntent().getIntExtra(EXTRA_BOARD_SIZE,
-                                           SelectorActivity.DEFAULT_BOARD_SIZE);
-    int handicap = getIntent().getIntExtra(EXTRA_HANDICAP,
-                                           SelectorActivity.DEFAULT_HANDICAP);
-    String boardJson = getIntent().getStringExtra(EXTRA_SAVED_GAME);
-    // TODO: get EXTRA_SAVED_GAME if it's not null
+    Intent intent = getIntent();
+    int handicap = intent.getIntExtra(EXTRA_HANDICAP, SelectorActivity.DEFAULT_HANDICAP);
+    String boardJson = intent.getStringExtra(BOARD_NAME);
+    String colorString = intent.getStringExtra(CURRENT_COLOR_NAME);
+    int boardSize = intent.getIntExtra(BOARD_SIZE_NAME, SelectorActivity.DEFAULT_BOARD_SIZE);
 
     setContentView(R.layout.game);
 
     if (findViewById(R.id.board_container) != null) {
       if (savedInstanceState != null) { return; }
 
-      board = BoardFragment.newInstance(boardSize, handicap);
+      board = BoardFragment.newInstance(boardSize, handicap, colorString, boardJson);
       getFragmentManager().beginTransaction()
                           .add(R.id.board_container, board).commit();
     }
@@ -61,7 +58,7 @@ public class BoardActivity extends Activity
     String json;
     if (saveGameState) {
       json = board.getJson();
-      // TODO: test here if board was actually empty (or had only handicap stones) and should use NO_SAVE_STRING anyway
+      // TODO: (eventually) test here if board was actually empty (or had only handicap stones) and should use NO_SAVE_STRING anyway
     } else {
       json = NO_SAVE_JSON;
     }
@@ -82,12 +79,6 @@ public class BoardActivity extends Activity
     writer.flush();
     fos.getFD().sync();
     writer.close();
-  }
-
-  @Override
-  protected void onStart() {
-    super.onStart();
-    // TODO: check for a saved game state - reload if found
   }
 
   //////////////////////////////////

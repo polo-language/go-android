@@ -54,7 +54,7 @@ public class SelectorActivity extends Activity {
           boardArray = jsonObject.getAsJsonArray(BoardActivity.BOARD_NAME);
           boardString = gson.toJson(boardArray);
 
-          // TODO: check that these aren't null - initialize or go to selector if they are
+          // TODO: check loaded values - initialize or load selector if 'too many' are 'bad'
           loadBoard(colorString, boardSizeFromJson, boardString);
         }
       } catch (Exception err) { // Just start a new game
@@ -73,7 +73,7 @@ public class SelectorActivity extends Activity {
     setContentView(R.layout.selector);
     Spinner spinner = (Spinner)findViewById(R.id.handicap_spinner);
     spinner.setOnItemSelectedListener(new HandicapSpinner());
-    ArrayAdapter<Integer> aa = new ArrayAdapter<Integer>(this,
+    ArrayAdapter<Integer> aa = new ArrayAdapter<>(this,
         android.R.layout.simple_spinner_item,
         handicaps);
     aa.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -83,7 +83,7 @@ public class SelectorActivity extends Activity {
   private void loadBoard(String currentColor, int boardSizeToUse, String boardString) {
     Intent boardIntent = new Intent(this, BoardActivity.class);
 
-    boardIntent.putExtra(BoardActivity.EXTRA_BOARD_SIZE, boardSizeToUse);
+    boardIntent.putExtra(BoardActivity.BOARD_SIZE_NAME, boardSizeToUse);
     boardIntent.putExtra(BoardActivity.EXTRA_HANDICAP, handicap);
     boardIntent.putExtra(BoardActivity.CURRENT_COLOR_NAME, currentColor);
     boardIntent.putExtra(BoardActivity.BOARD_NAME, boardString);

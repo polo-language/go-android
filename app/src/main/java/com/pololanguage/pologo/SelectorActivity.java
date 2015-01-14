@@ -3,16 +3,21 @@ package com.pololanguage.pologo;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
-import java.io.BufferedReader;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 
 public class SelectorActivity extends Activity {
@@ -25,35 +30,43 @@ public class SelectorActivity extends Activity {
   @Override
   public void onCreate(Bundle icicle) {
     super.onCreate(icicle);
-    String savedGameString;
+
     File file = new File(getFilesDir(), BoardActivity.SAVED_BOARD_FILENAME);
+    try {
+      FileInputStream fileInputStream = new FileInputStream(file);
 
-    try { // This leaks a FileInputStream if it throws...
-      FileInputStream fis = new FileInputStream(file);
-      savedGameString = convertStreamToString(fis);
-      fis.close();
+      try {
+        Gson gson = new Gson();
+        JsonParser parser = new JsonParser();
+        JsonElement jsonElement = parser.parse(new InputStreamReader(fileInputStream, "UTF-8"));
+        JsonObject jsonObject = jsonElement.getAsJsonObject();
+        JsonElement noSave = jsonObject.get(BoardActivity.NO_SAVE_NAME);
+        String colorString;
+        int boardSizeFromJson;
+        String boardString;
+        JsonArray boardArray;
 
-      // TODO: check value of saved board on first start and loadSelectorView there as well
-      if (savedGameString.trim().equals(BoardActivity.NO_SAVE_STRING)) {
+        if (noSave != null) {
+          loadSelectorView();
+        } else {
+          colorString = jsonObject.get(BoardActivity.CURRENT_COLOR_NAME).getAsString();
+          boardSizeFromJson = jsonObject.get(BoardActivity.BOARD_SIZE_NAME).getAsInt();
+          boardArray = jsonObject.getAsJsonArray(BoardActivity.BOARD_NAME);
+          boardString = gson.toJson(boardArray);
+
+          // TODO: check that these aren't null - initialize or go to selector if they are
+          loadBoard(colorString, boardSizeFromJson, boardString);
+        }
+      } catch (Exception err) { // Just start a new game
         loadSelectorView();
-      } else {
-        loadBoard(savedGameString);
+      } finally {
+        fileInputStream.close();
       }
-    } catch (Exception err) {
-      Log.e("SelectorActivity load file: ", err.toString());
+    } catch (FileNotFoundException fnfExc) {
       loadSelectorView();
+    } catch (IOException ioExc) {
+      // Do nothing, just for closing fileInputStream - game state loaded already
     }
-  }
-
-  public static String convertStreamToString(InputStream is) throws IOException {
-    BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-    StringBuilder sb = new StringBuilder();
-    String line;
-    while ((line = reader.readLine()) != null) {
-      sb.append(line).append("\n");
-    }
-    reader.close();
-    return sb.toString();
   }
 
   private void loadSelectorView() {
@@ -67,13 +80,14 @@ public class SelectorActivity extends Activity {
     spinner.setAdapter(aa);
   }
 
-  private void loadBoard(String savedGameString) {
+  private void loadBoard(String currentColor, int boardSizeToUse, String boardString) {
     Intent boardIntent = new Intent(this, BoardActivity.class);
-    boardIntent.putExtra(BoardActivity.EXTRA_BOARD_SIZE, boardSize);
+
+    boardIntent.putExtra(BoardActivity.EXTRA_BOARD_SIZE, boardSizeToUse);
     boardIntent.putExtra(BoardActivity.EXTRA_HANDICAP, handicap);
-    if (savedGameString != null) { // TODO: delete this check, should be fine checking in BoardActivity#onCreate() alone
-      boardIntent.putExtra(BoardActivity.EXTRA_SAVED_GAME, savedGameString);
-    }
+    boardIntent.putExtra(BoardActivity.CURRENT_COLOR_NAME, currentColor);
+    boardIntent.putExtra(BoardActivity.BOARD_NAME, boardString);
+
     startActivity(boardIntent);
   }
 
@@ -103,6 +117,6 @@ public class SelectorActivity extends Activity {
   }
 
   public void onGoClicked(View view) {
-    loadBoard(null);
+    loadBoard("BLACK", boardSize, null); // check for null boardString in BoardActivity
   }
 }

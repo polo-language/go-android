@@ -17,8 +17,13 @@ public class BoardActivity extends Activity
   public static final String EXTRA_HANDICAP = "handicap";
   public static final String EXTRA_SAVED_GAME = "saved_game";
   static final String SAVED_BOARD_FILENAME = "saved_board";
-  public static final String NO_SAVE_STRING = "{\"noSave\":true}";
+  public static final String NO_SAVE_NAME = "noSave";
+  public static final String NO_SAVE_JSON = "{\"" + NO_SAVE_NAME + "\":true}";
+  public static final String CURRENT_COLOR_NAME = "currentColor";
+  public static final String BOARD_SIZE_NAME = "boardSize";
+  public static final String BOARD_NAME = "board";
   private BoardFragment board;
+  boolean saveOnDestroy = true;
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
@@ -43,7 +48,9 @@ public class BoardActivity extends Activity
 
   @Override
   protected void onDestroy() {
-    saveBoardToFile(true);
+    if (saveOnDestroy) {
+      saveBoardToFile(true);
+    }
     super.onDestroy();
   }
 
@@ -56,7 +63,7 @@ public class BoardActivity extends Activity
       json = board.getJson();
       // TODO: test here if board was actually empty (or had only handicap stones) and should use NO_SAVE_STRING anyway
     } else {
-      json = NO_SAVE_STRING;
+      json = NO_SAVE_JSON;
     }
     File file = new File(getFilesDir(), SAVED_BOARD_FILENAME);
     try {
@@ -64,7 +71,7 @@ public class BoardActivity extends Activity
       // DEBUG:
       Log.i("saved: ", json);
     } catch (IOException ioE) {
-      Log.e("onStop: board state not saved", ioE.toString());
+      Log.e("BoardActivity#onStop: board state not saved", ioE.toString());
     }
   }
 
@@ -100,6 +107,7 @@ public class BoardActivity extends Activity
   public void onDialogNeutralClick() {
     // "New Game"
     board.reset();
+    saveOnDestroy = false;
     saveBoardToFile(false);
     // Restart selector activity
     Intent selector = new Intent(this, SelectorActivity.class);

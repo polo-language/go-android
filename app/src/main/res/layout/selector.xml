@@ -3,61 +3,72 @@
     android:layout_height="match_parent"
     android:layout_width="match_parent"
     android:orientation="vertical"
-    android:layout_margin="50dp">
+    android:padding="50dp">
+    <!--android:background="@drawable/nine_dragons_scroll_02"-->
 
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="0dp"
-        android:orientation="vertical"
+        android:orientation="horizontal"
         android:layout_weight="40">
         <TextView
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center"
             android:text="@string/board_size" />
-        <RadioGroup
-            android:id="@+id/board_size_radio"
+        <LinearLayout
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginStart="100dp"
-            android:layout_marginLeft="100dp"
-            android:checkedButton="@+id/board_size_radio_9">
-            <RadioButton
-                android:id="@id/board_size_radio_9"
+            android:layout_height="match_parent"
+            android:layout_marginStart="50dp"
+            android:layout_marginLeft="50dp"
+            android:gravity="center">
+            <RadioGroup
+                android:id="@+id/board_size_radio"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/nine"
-                android:onClick="onBoardSizeRadioClicked"/>
-            <RadioButton
-                android:id="@+id/board_size_radio_13"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/thirteen"
-                android:onClick="onBoardSizeRadioClicked"/>
-            <RadioButton
-                android:id="@+id/board_size_radio_19"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/nineteen"
-                android:onClick="onBoardSizeRadioClicked"/>
-        </RadioGroup>
+                android:orientation="vertical"
+                android:checkedButton="@+id/board_size_radio_9">
+                <RadioButton
+                    android:id="@id/board_size_radio_9"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/nine"
+                    android:onClick="onBoardSizeRadioClicked"/>
+                <RadioButton
+                    android:id="@+id/board_size_radio_13"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/thirteen"
+                    android:onClick="onBoardSizeRadioClicked"/>
+                <RadioButton
+                    android:id="@+id/board_size_radio_19"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/nineteen"
+                    android:onClick="onBoardSizeRadioClicked"/>
+            </RadioGroup>
+        </LinearLayout>
     </LinearLayout>
+
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="0dp"
-        android:orientation="vertical"
+        android:orientation="horizontal"
         android:layout_weight="30">
         <TextView
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center"
             android:text="@string/handicap"/>
         <Spinner
             android:id="@+id/handicap_spinner"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="100dp"
-            android:layout_marginLeft="100dp"/>
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:layout_marginStart="50dp"
+            android:layout_marginLeft="50dp"/>
     </LinearLayout>
+
     <Button
         android:layout_width="wrap_content"
         android:layout_height="0dp"

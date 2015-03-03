@@ -31,6 +31,7 @@ public class BoardFragment extends Fragment
   private int marginTop;
   private int marginLeft;
   private int boardImage;
+  private StoredMove[] storedMoves;
   private int[] xCoords;
   private int[] yCoords;
   private boolean firstTouch = true;
@@ -62,7 +63,10 @@ public class BoardFragment extends Fragment
     } catch (IllegalArgumentException e) {
       frag.currentColor = StoneColor.BLACK;
     }
-    // TODO: save boardString somewhere. In onCreate convert it to an array StoredMove[] with gson, then place the moves
+
+    if (boardString != null) {
+      frag.storedMoves = (new Gson()).fromJson(boardString, StoredMove[].class);
+    }
     return frag;
   }
 
@@ -70,10 +74,8 @@ public class BoardFragment extends Fragment
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setRetainInstance(true);
-    DisplayMetrics displayMetrics = getActivity().getResources()
-            .getDisplayMetrics();
-    boardWidth = Math.min(displayMetrics.widthPixels,
-            displayMetrics.heightPixels);
+    DisplayMetrics displayMetrics = getActivity().getResources().getDisplayMetrics();
+    boardWidth = Math.min(displayMetrics.widthPixels, displayMetrics.heightPixels);
     handleBoardSize();
     setCoordinateArrays();
   }
@@ -121,7 +123,11 @@ public class BoardFragment extends Fragment
   @Override
   public void onViewCreated(View view, Bundle savedInstanceState) {
     layoutBoard();
-    addHandicapStones();
+    if (storedMoves == null) {
+      addHandicapStones();
+    } else {
+      placeStoredMoves();
+    }
     // DEBUG: testStoneLayout();
   }
 
@@ -140,6 +146,7 @@ public class BoardFragment extends Fragment
             new RelativeLayout.LayoutParams(boardWidth, boardWidth);
     layoutParams.addRule(RelativeLayout.CENTER_VERTICAL);
     boardContainer.setLayoutParams(layoutParams);
+    // TODO: create board with native android elements instead of image so stone/board alignment is perfect
     boardContainer.setBackgroundResource(boardImage);
     board = (RelativeLayout)getActivity().findViewById(R.id.board_rel_layout);
     board.setOnTouchListener(this);
@@ -167,6 +174,14 @@ public class BoardFragment extends Fragment
       placeStone(handicaps[i]);
     }
     currentColor = StoneColor.WHITE;
+  }
+
+  private void placeStoredMoves () {
+    for (StoredMove move : storedMoves) {
+      currentColor = move.color;
+      placeStone(new BoxCoords(move.x, move.y));
+    }
+    currentColor = currentColor.getOther();
   }
 
   private void placeStoneAtBoxCoords() {

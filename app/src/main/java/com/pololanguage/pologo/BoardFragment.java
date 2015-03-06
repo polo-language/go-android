@@ -1,11 +1,6 @@
 package com.pololanguage.pologo;
 
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.app.DialogFragment;
 import android.app.Fragment;
-import android.content.DialogInterface;
-import android.content.Intent;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -17,9 +12,7 @@ import android.widget.RelativeLayout;
 import android.widget.Toast;
 import com.google.gson.Gson;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 public class BoardFragment extends Fragment
@@ -30,7 +23,6 @@ public class BoardFragment extends Fragment
   private int stoneWidth;
   private int marginTop;
   private int marginLeft;
-  private int boardImage;
   private StoredMove[] storedMoves;
   private int[] xCoords;
   private int[] yCoords;
@@ -42,6 +34,8 @@ public class BoardFragment extends Fragment
   private RelativeLayout board;
   private Stone cursor;
   private Box box;
+
+  // DELETE: private static final int boardImage = R.drawable.board_01;
 
   private static final float NINE_MARGINMODIFIER = (float)8/615;
   private static final float NINE_STONEMODIFIER = (float)67/615;
@@ -86,19 +80,19 @@ public class BoardFragment extends Fragment
         stoneWidth = Math.round(boardWidth * NINE_STONEMODIFIER);
         marginLeft = Math.round(boardWidth * NINE_MARGINMODIFIER);
         marginTop = marginLeft;
-        boardImage = R.drawable.board_9x9;
+        //boardImage = R.drawable.board_9x9;
         break;
       case 13:
         stoneWidth = Math.round(boardWidth * THIRTEEN_STONEMODIFIER);
         marginLeft = Math.round(boardWidth * THIRTEEN_MARGINMODIFIER);
         marginTop = marginLeft;
-        boardImage = R.drawable.board_13x13;
+        //boardImage = R.drawable.board_13x13;
         break;
       case 19:
         stoneWidth = Math.round(boardWidth * NINETEEN_STONEMODIFIER);
         marginLeft = Math.round(boardWidth * NINETEEN_MARGINMODIFIER);
         marginTop = marginLeft - 15;
-        boardImage = R.drawable.board_19x19;
+        //boardImage = R.drawable.board_19x19;
         break;
       default:
         Log.e("Board#handleBoardSize", "Incorrect board size (not 9, 13, or 19).");
@@ -147,8 +141,9 @@ public class BoardFragment extends Fragment
     layoutParams.addRule(RelativeLayout.CENTER_VERTICAL);
     boardContainer.setLayoutParams(layoutParams);
     // TODO: create board with native android elements instead of image so stone/board alignment is perfect
-    boardContainer.setBackgroundResource(boardImage);
-    board = (RelativeLayout)getActivity().findViewById(R.id.board_rel_layout);
+    //DELETE: boardContainer.setBackgroundResource(boardImage);
+    board = (RelativeLayout)getActivity().findViewById(R.id.board);
+    //board.setBackgroundResource(boardImage);
     board.setOnTouchListener(this);
   }
 

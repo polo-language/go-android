@@ -68,7 +68,7 @@ public class BoardActivity extends Activity
       // DEBUG:
       Log.i("saved: ", json);
     } catch (IOException ioE) {
-      Log.e("BoardActivity#onStop: board state not saved", ioE.toString());
+      Log.e("Board state not saved", ioE.toString());
     }
   }
 

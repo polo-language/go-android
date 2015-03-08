@@ -4,52 +4,61 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.util.AttributeSet;
-import android.view.View;
+import android.view.ViewGroup;
+import android.widget.RelativeLayout;
 
-public class BoardView extends View {
-  public static final float BOARD_LINE_WIDTH = 10.0f;
-
+public class BoardView extends RelativeLayout {
+  float lineWidth;
+  int[] xCoords;
+  int[] yCoords;
   Paint paint = new Paint();
 
-  // to be called with 'this' from an Activity (Activity extends context)
-  // TODO: or from Fragment with getActivity()
-
-  protected BoardView newInstance(Context context, int[] xCoords, int[] yCoords) {
+  protected static BoardView newInstance(Context context, int[] xCoords, int[] yCoords) {
+    int stoneHalfWidth = (xCoords[1] - xCoords[0]) / 2;
     BoardView boardView = new BoardView(context);
-    int boardSize = xCoords.length;
 
-    // TODO:
-    // don't actually use loop and save to separate variables
-    //  just use the coords as outlined below
-
-    /*
-    for (int i = 0; i < boardSize; ++i) {
-      vertStarts[i] = xCoords[i], yCoords[0];
-      vertEnds = xCoords[i], yCoords[boardSize];
-      horizStarts = xCoords[0], yCoords[i]
-      horizEnds = xCoords[boardSize], yCoords[i]
+    boardView.setId(R.id.board);
+    boardView.xCoords = new int[xCoords.length];
+    boardView.yCoords = new int[xCoords.length];
+    for (int i = 0; i < boardView.xCoords.length; ++i) {
+      boardView.xCoords[i] = xCoords[i] + stoneHalfWidth;
+      boardView.yCoords[i] = yCoords[i] + stoneHalfWidth;
     }
-    */
+    switch (xCoords.length) {
+      case 9:
+        boardView.lineWidth = 5.0f;
+        break;
+      case 13:
+        boardView.lineWidth = 4.0f;
+        break;
+      case 19:
+        boardView.lineWidth = 3.0f;
+        break;
+      default:
+        boardView.lineWidth = 4.0f;
+        break;
+    }
+
+    boardView.paint.setColor(Color.BLACK);
+    boardView.paint.setStrokeWidth(boardView.lineWidth);
+
+    ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(LayoutParams.MATCH_PARENT,
+                                                                     LayoutParams.MATCH_PARENT);
+    boardView.setLayoutParams(layoutParams);
+    boardView.setBackgroundResource(R.drawable.board_01);
 
     return boardView;
   }
 
-  public BoardView(Context context) { // for programmatic instantiation
+  public BoardView(Context context) {
     super(context);
-    paint.setColor(Color.BLACK);
-  }
-
-  // for XML instantiation
-  public BoardView (Context context, AttributeSet attrs) {
-    super(context, attrs);
-    paint.setColor(Color.BLACK);
-    paint.setStrokeWidth(BOARD_LINE_WIDTH);
   }
 
   @Override
   public void onDraw(Canvas canvas) {
-    canvas.drawLine(110, 110, 20, 80, paint);
-    canvas.drawLine(20, 0, 0, 20, paint);
+    for (int i = 0; i < xCoords.length; ++i) {
+      canvas.drawLine(xCoords[i], yCoords[0], xCoords[i], yCoords[xCoords.length - 1], paint);
+      canvas.drawLine(xCoords[0], yCoords[i], xCoords[xCoords.length - 1], yCoords[i], paint);
+    }
   }
 }

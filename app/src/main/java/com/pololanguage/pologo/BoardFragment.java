@@ -1,7 +1,12 @@
 package com.pololanguage.pologo;
 
 import android.app.Fragment;
+import android.content.Context;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.os.Bundle;
+import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -21,32 +26,27 @@ public class BoardFragment extends Fragment
   private int handicap;
   private int boardWidth;
   private int stoneWidth;
-  private int marginTop;
-  private int marginLeft;
+  private int margin;
   private StoredMove[] storedMoves;
   private int[] xCoords;
   private int[] yCoords;
   private boolean firstTouch = true;
   private boolean firstPass = false;
-  private StoneColor currentColor; // = StoneColor.BLACK;
+  private StoneColor currentColor;
   ArrayList<Stone> stones = new ArrayList<>();
   private Set<BoxCoords> moves = new HashSet<>();
   private RelativeLayout board;
   private Stone cursor;
   private Box box;
 
-  // DELETE: private static final int boardImage = R.drawable.board_01;
-
-  private static final float NINE_MARGINMODIFIER = (float)8/615;
   private static final float NINE_STONEMODIFIER = (float)67/615;
-  private static final float THIRTEEN_MARGINMODIFIER = (float)8/615;
   private static final float THIRTEEN_STONEMODIFIER = (float)46/615;
-  private static final float NINETEEN_MARGINMODIFIER = (float)18/615;
   private static final float NINETEEN_STONEMODIFIER = (float)31/615;
 
   private static final BoxCoords[] NINE_HANDICAPS = {new BoxCoords(6, 2), new BoxCoords(2, 6), new BoxCoords(6, 6), new BoxCoords(2, 2), new BoxCoords(4, 4)};
   private static final BoxCoords[] THIRTEEN_HANDICAPS = {new BoxCoords(9, 3), new BoxCoords(3, 9), new BoxCoords(9, 9), new BoxCoords(3, 3), new BoxCoords(6, 6)};
   private static final BoxCoords[] NINETEEN_HANDICAPS = {new BoxCoords(15, 3), new BoxCoords(3, 15), new BoxCoords(15, 15), new BoxCoords(3, 3), new BoxCoords(9, 9)};
+
 
   protected static BoardFragment newInstance(int boardSize, int handicap, String colorString, String boardString) {
     BoardFragment frag = new BoardFragment();
@@ -78,40 +78,32 @@ public class BoardFragment extends Fragment
     switch (boardSize) {
       case 9:
         stoneWidth = Math.round(boardWidth * NINE_STONEMODIFIER);
-        marginLeft = Math.round(boardWidth * NINE_MARGINMODIFIER);
-        marginTop = marginLeft;
-        //boardImage = R.drawable.board_9x9;
         break;
       case 13:
         stoneWidth = Math.round(boardWidth * THIRTEEN_STONEMODIFIER);
-        marginLeft = Math.round(boardWidth * THIRTEEN_MARGINMODIFIER);
-        marginTop = marginLeft;
-        //boardImage = R.drawable.board_13x13;
         break;
       case 19:
         stoneWidth = Math.round(boardWidth * NINETEEN_STONEMODIFIER);
-        marginLeft = Math.round(boardWidth * NINETEEN_MARGINMODIFIER);
-        marginTop = marginLeft - 15;
-        //boardImage = R.drawable.board_19x19;
         break;
       default:
         Log.e("Board#handleBoardSize", "Incorrect board size (not 9, 13, or 19).");
     }
+    margin = Math.round((boardWidth - boardSize*stoneWidth) / 2);
   }
 
   private void setCoordinateArrays() {
     xCoords = new int[boardSize];
     yCoords = new int[boardSize];
     for(int i = 0; i < boardSize; ++i) {
-      xCoords[i] = marginLeft + i*stoneWidth;
-      yCoords[i] = marginTop + i*stoneWidth;
+      xCoords[i] = margin + i*stoneWidth;
+      yCoords[i] = margin + i*stoneWidth;
     }
   }
 
   @Override
   public View onCreateView(LayoutInflater inflater,
                            ViewGroup container, Bundle savedInstanceState) {
-    return inflater.inflate(R.layout.board, container, false);
+    return BoardView.newInstance(getActivity(), xCoords, yCoords);
   }
 
   @Override
@@ -136,14 +128,13 @@ public class BoardFragment extends Fragment
 
   private void layoutBoard() {
     View boardContainer = getActivity().findViewById(R.id.board_container);
+
     RelativeLayout.LayoutParams layoutParams =
             new RelativeLayout.LayoutParams(boardWidth, boardWidth);
     layoutParams.addRule(RelativeLayout.CENTER_VERTICAL);
     boardContainer.setLayoutParams(layoutParams);
-    // TODO: create board with native android elements instead of image so stone/board alignment is perfect
-    //DELETE: boardContainer.setBackgroundResource(boardImage);
+
     board = (RelativeLayout)getActivity().findViewById(R.id.board);
-    //board.setBackgroundResource(boardImage);
     board.setOnTouchListener(this);
   }
 

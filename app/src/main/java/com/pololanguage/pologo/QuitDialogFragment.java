@@ -11,8 +11,7 @@ public class QuitDialogFragment extends DialogFragment {
 
   public interface QuitDialogListener {
     public void onDialogPositiveClick();
-    public void onDialogNeutralClick();
-    //public void onDialogNegativeClick();
+    public void onDialogNegativeClick();
   }
 
   QuitDialogListener listener;
@@ -20,9 +19,8 @@ public class QuitDialogFragment extends DialogFragment {
   @Override
   public void onAttach(Activity activity) {
     super.onAttach(activity);
-    // Verify that the host activity implements the callback interface
-    try {
-      // Instantiate the NoticeDialogListener so we can send events to the host
+
+    try { // make sure parent activity implements the listener interface
       listener = (QuitDialogListener) activity;
     } catch (ClassCastException e) {
       throw new ClassCastException(activity.toString() + " must implement QuitDialogListener");
@@ -43,14 +41,7 @@ public class QuitDialogFragment extends DialogFragment {
     builder.setNeutralButton(R.string.new_game, new DialogInterface.OnClickListener() {
       @Override
       public void onClick(DialogInterface dialog, int which) {
-        listener.onDialogNeutralClick();
-      }
-    });
-
-    builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-      @Override
-      public void onClick(DialogInterface dialog, int which) {
-        // Do nothing
+        listener.onDialogNegativeClick();
       }
     });
 

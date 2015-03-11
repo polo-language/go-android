@@ -95,7 +95,7 @@ public class BoardActivity extends Activity
   }
 
   @Override
-  public void onDialogNeutralClick() {
+  public void onDialogNegativeClick() {
     // "New Game"
     board.reset();
     saveOnDestroy = false;

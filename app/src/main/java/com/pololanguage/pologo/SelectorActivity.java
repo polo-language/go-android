@@ -72,12 +72,13 @@ public class SelectorActivity extends Activity {
   private void loadSelectorView() {
     setContentView(R.layout.selector);
     Spinner spinner = (Spinner)findViewById(R.id.handicap_spinner);
-    spinner.setOnItemSelectedListener(new HandicapSpinner());
-    ArrayAdapter<Integer> aa = new ArrayAdapter<>(this,
+    spinner.setOnItemSelectedListener(new HandicapSpinnerListener());
+
+    ArrayAdapter<Integer> adapter = new ArrayAdapter<>(this,
         android.R.layout.simple_spinner_item,
         handicaps);
-    aa.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-    spinner.setAdapter(aa);
+    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+    spinner.setAdapter(adapter);
   }
 
   private void loadBoard(String currentColor, int boardSizeToUse, String boardString) {
@@ -91,7 +92,7 @@ public class SelectorActivity extends Activity {
     startActivity(boardIntent);
   }
 
-  public class HandicapSpinner implements AdapterView.OnItemSelectedListener {
+  public class HandicapSpinnerListener implements AdapterView.OnItemSelectedListener {
     @Override
     public void onItemSelected(AdapterView<?> parent, View view,
                                int position, long id) {

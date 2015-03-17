@@ -1,5 +1,6 @@
 package com.pololanguage.pologo;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -30,6 +31,13 @@ public class SelectorActivity extends Activity {
   @Override
   public void onCreate(Bundle icicle) {
     super.onCreate(icicle);
+
+    try {
+      getActionBar().setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
+      getActionBar().setCustomView(R.layout.action_bar);
+    } catch (NullPointerException e) {
+      getActionBar().setDisplayOptions(ActionBar.DISPLAY_SHOW_HOME | ActionBar.DISPLAY_SHOW_TITLE);
+    }
 
     File file = new File(getFilesDir(), BoardActivity.SAVED_BOARD_FILENAME);
     try {

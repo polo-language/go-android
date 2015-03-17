@@ -1,5 +1,6 @@
 package com.pololanguage.pologo;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.DialogFragment;
 import android.content.Intent;
@@ -26,6 +27,14 @@ public class BoardActivity extends Activity
   @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
+
+    try {
+      getActionBar().setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
+      getActionBar().setCustomView(R.layout.action_bar);
+    } catch (NullPointerException e) {
+      getActionBar().setDisplayOptions(ActionBar.DISPLAY_SHOW_HOME | ActionBar.DISPLAY_SHOW_TITLE);
+    }
+
     Intent intent = getIntent();
     int handicap = intent.getIntExtra(EXTRA_HANDICAP, SelectorActivity.DEFAULT_HANDICAP);
     String boardJson = intent.getStringExtra(BOARD_NAME);

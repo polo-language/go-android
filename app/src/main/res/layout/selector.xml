@@ -85,7 +85,6 @@
             android:layout_marginStart="100dp"
             android:layout_marginLeft="100dp"
             android:src="@drawable/white_go_button"
-            android:text="@string/go_button"
             style="?android:attr/borderlessButtonStyle"
             android:onClick="onGoClicked"/>
         <!-- ### -->

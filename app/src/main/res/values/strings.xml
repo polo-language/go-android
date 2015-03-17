@@ -1,13 +1,11 @@
 <resources>
-    <string name="app_name">Polo Go</string>
+    <string name="app_name">9-Dragon Go</string>
     <string name="nine_dragon_scroll_description">Nine Dragon Scroll</string>
     <string name="board_size">Board size:</string>
     <string name="nine">9</string>
     <string name="thirteen">13</string>
     <string name="nineteen">19</string>
     <string name="handicap">Handicap:</string>
-    <string name="go_button">Go!</string>
-    <string name="game_header">Polo Go</string>
     <string name="undo_button">Undo</string>
     <string name="pass_button">Pass</string>
     <string name="reset_button">Quit</string>

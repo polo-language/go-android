@@ -2,11 +2,13 @@
 
 A native Android implementation of the classic board game _GO_.
 
-### Author ###
+## Author
 
 Angelo Polo
 
 <polo.language@gmail.com>
+
+## Screenshots
 
 ![selector screen](/screenshot/selector.png)
 ![game board](/screenshot/board.png)

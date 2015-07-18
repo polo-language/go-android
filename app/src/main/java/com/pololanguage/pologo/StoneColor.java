@@ -11,7 +11,6 @@ enum StoneColor {
   int getResource() { return resource; }
 
   StoneColor getOther() {
-    if (this == BLACK) return WHITE;
-    else return BLACK;
+    return (this == BLACK) ? WHITE : BLACK;
   }
 }

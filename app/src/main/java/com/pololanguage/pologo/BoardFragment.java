@@ -2,11 +2,7 @@ package com.pololanguage.pologo;
 
 import android.app.Fragment;
 import android.content.Context;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
 import android.os.Bundle;
-import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -118,13 +114,13 @@ public class BoardFragment extends Fragment
   }
 
   // DEBUG:
-  public void testStoneLayout() {
-    for (int i = 0; i < boardSize; ++i) {
-      for (int j = 0; j < boardSize; ++j) {
-        placeStone(new BoxCoords(i, j));
-      }
-    }
-  }
+//  public void testStoneLayout() {
+//    for (int i = 0; i < boardSize; ++i) {
+//      for (int j = 0; j < boardSize; ++j) {
+//        placeStone(new BoxCoords(i, j));
+//      }
+//    }
+//  }
 
   private void layoutBoard() {
     View boardContainer = getActivity().findViewById(R.id.board_container);
@@ -303,28 +299,6 @@ public class BoardFragment extends Fragment
 
   //////////////////////////////////
   // INNER CLASSES:
-  private static class BoxCoords {
-    // Holds game position coordinates (i.e. 1-9, 1-13, or 1-19, not pixel offsets)
-    int x, y;
-
-    BoxCoords(int x, int y) {
-      if (x < -1 || 19 < x || y < -1 || 19 < y) {
-        throw new IndexOutOfBoundsException("Invalid BoxCoords parameters.");
-      }
-      this.x = x;
-      this.y = y;
-    }
-
-    @Override
-    public boolean equals(Object other) {
-      return !(other == null || this.getClass() != other.getClass())
-              && (x == ((BoxCoords)other).x && y == ((BoxCoords)other).y);
-    }
-
-    @Override
-    public int hashCode() { return ((Integer) (x + 19*y)).hashCode(); }
-  }
-
   private class Stone extends View {
     BoxCoords coords;
     StoneColor color;

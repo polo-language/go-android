@@ -1,7 +1,8 @@
 package com.pololanguage.pologo;
 
 public class BoxCoords {
-  // Holds game position coordinates (i.e. 1-9, 1-13, or 1-19, not pixel offsets)
+  // Holds zero-indexed game position coordinates (i.e. 0-8, 0-12, or 0-18, not pixel offsets)
+  // Coordinates of -1 indicates off-board
   int x, y;
 
   BoxCoords(int x, int y) {

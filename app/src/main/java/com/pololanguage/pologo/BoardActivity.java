@@ -61,7 +61,6 @@ public class BoardActivity extends Activity
   }
 
   void saveBoardToFile(Boolean saveGameState) {
-    // TODO: verify this is working
     if (board == null) { return; }
 
     String json;
@@ -75,7 +74,7 @@ public class BoardActivity extends Activity
     try {
       saveStringToFile(file, json);
       // DEBUG:
-      Log.i("saved: ", json);
+      //Log.i("saved: ", json);
     } catch (IOException ioE) {
       Log.e("Board state not saved", ioE.toString());
     }

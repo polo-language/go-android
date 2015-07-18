@@ -1,7 +1,6 @@
 package com.pololanguage.pologo;
 
 import android.app.Fragment;
-import android.content.Context;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -12,9 +11,6 @@ import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 import com.google.gson.Gson;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
 
 public class BoardFragment extends Fragment
                            implements View.OnTouchListener {
@@ -29,10 +25,9 @@ public class BoardFragment extends Fragment
   private boolean firstTouch = true;
   private boolean firstPass = false;
   private StoneColor currentColor;
-  ArrayList<Stone> stones = new ArrayList<>();
-  private Set<BoxCoords> moves = new HashSet<>();
+  private Moves moves;
   private RelativeLayout board;
-  private Stone cursor;
+  private Moves.Stone cursor;
   private Box box;
 
   private static final float NINE_STONEMODIFIER = (float)67/615;
@@ -65,6 +60,7 @@ public class BoardFragment extends Fragment
     super.onCreate(savedInstanceState);
     setRetainInstance(true);
     DisplayMetrics displayMetrics = getActivity().getResources().getDisplayMetrics();
+    moves = new Moves(getActivity(), boardSize);
     boardWidth = Math.min(displayMetrics.widthPixels, displayMetrics.heightPixels);
     handleBoardSize();
     setCoordinateArrays();
@@ -171,8 +167,24 @@ public class BoardFragment extends Fragment
   }
 
   private void placeStone(BoxCoords coords) {
-    moves.add(coords);
-    stones.add(new Stone(coords, currentColor));
+    Moves.Stone stone = moves.new Stone(coords, currentColor);
+    moves.add(stone);
+    renderStone(stone);
+  }
+
+  private void renderStone(Moves.Stone stone) {
+    RelativeLayout.LayoutParams layout =
+        new RelativeLayout.LayoutParams(stoneWidth, stoneWidth);
+
+    stone.setLayoutParams(layout);
+
+    if (stone.coords.x < 0 || stone.coords.y < 0) {
+      stone.move(-200, -200); // place stone off-board
+    } else {
+      stone.move(xCoords[stone.coords.x], yCoords[stone.coords.y]);
+    }
+
+    board.addView(stone);
   }
 
   @Override
@@ -196,7 +208,8 @@ public class BoardFragment extends Fragment
   }
 
   private void addCursor() {
-    cursor = new Stone(null, currentColor);
+    cursor = moves.new Stone(new BoxCoords(-1, -1), currentColor);
+    renderStone(cursor);
     cursor.setAlpha(0.7f);
 
     box = new Box();
@@ -232,13 +245,12 @@ public class BoardFragment extends Fragment
   //////////////////////////////////
   // BUTTON onClick LISTENERS
   public void undo() {
-    if (stones.isEmpty()) {
+    if (moves.isEmpty()) {
       Toast.makeText(getActivity(), R.string.no_moves_to_undo, Toast.LENGTH_LONG)
               .show();
       return;
     }
-    Stone lastStone = stones.remove(stones.size() - 1);
-    moves.remove(lastStone.coords);
+    Moves.Stone lastStone = moves.pop();
     board.removeView(lastStone);
     Toast.makeText(getActivity(),
             lastStone.color == StoneColor.BLACK ?
@@ -271,8 +283,7 @@ public class BoardFragment extends Fragment
 
   public void reset() {
     board.removeAllViews();
-    moves.clear();
-    stones.clear();
+    moves.reset();
     board.setOnTouchListener(this);
     getActivity().findViewById(R.id.undo_button).setEnabled(true);
     getActivity().findViewById(R.id.pass_button).setEnabled(true);
@@ -283,59 +294,13 @@ public class BoardFragment extends Fragment
   //////////////////////////////////
   // SERIALIZATION:
   String getJson() {
-    int numMoves = stones.size();
-    StoredMove[] moveArray = new StoredMove[numMoves];
-    Stone stone;
-
-    for (int i = 0; i < numMoves; ++i) {
-      stone = stones.get(i);
-      moveArray[i] = new StoredMove(i, stone.coords.x, stone.coords.y, stone.color);
-    }
-
     return "{\"" + BoardActivity.CURRENT_COLOR_NAME + "\":\"" + currentColor + "\",\"" +
         BoardActivity.BOARD_SIZE_NAME + "\":" + boardSize + ",\"" +
-        BoardActivity.BOARD_NAME + "\":" + (new Gson()).toJson(moveArray) + "}";
+        BoardActivity.BOARD_NAME + "\":" + moves.toJson() + "}";
   }
 
   //////////////////////////////////
   // INNER CLASSES:
-  private class Stone extends View {
-    BoxCoords coords;
-    StoneColor color;
-
-    Stone(BoxCoords coords, StoneColor color) {
-      super(BoardFragment.this.getActivity());
-      this.color = color;
-
-      if (coords == null) { // used for cursor only
-        setUpStoneView(-200, -200, color);
-      } else {
-        this.coords = coords;
-        setUpStoneView(xCoords[coords.x], yCoords[coords.y], color);
-      }
-    }
-
-    private void setUpStoneView(int x, int y, StoneColor color) {
-      RelativeLayout.LayoutParams layout =
-              new RelativeLayout.LayoutParams(stoneWidth, stoneWidth);
-      layout.leftMargin = x;
-      layout.topMargin = y;
-      setLayoutParams(layout);
-      setBackgroundResource(color.getResource());
-      board.addView(this);
-    }
-
-    private void move(int x, int y) {
-      RelativeLayout.LayoutParams layoutParams =
-              (RelativeLayout.LayoutParams) getLayoutParams();
-      layoutParams.leftMargin = x;
-      layoutParams.topMargin = y;
-      layoutParams.rightMargin = -250;
-      layoutParams.bottomMargin = -250;
-      setLayoutParams(layoutParams);
-    }
-  }
-
   private class Box extends View {
     BoxCoords coords;
 
@@ -348,7 +313,7 @@ public class BoardFragment extends Fragment
       boxParams.topMargin = -200;
       setLayoutParams(boxParams);
       setBackgroundResource(R.drawable.box);
-      setOnClickListener(new CursorListener());
+      setOnClickListener(new BoxClickListener());
       board.addView(this);
     }
 
@@ -373,7 +338,7 @@ public class BoardFragment extends Fragment
     }
   }
 
-  private class CursorListener implements View.OnClickListener {
+  private class BoxClickListener implements View.OnClickListener {
     @Override
     public void onClick(View view) {
       placeStoneAtBoxCoords();

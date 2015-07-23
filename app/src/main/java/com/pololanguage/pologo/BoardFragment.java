@@ -27,7 +27,7 @@ public class BoardFragment extends Fragment
   private StoneColor currentColor;
   private Moves moves;
   private RelativeLayout board;
-  private Moves.Stone cursor;
+  private Stone cursor;
   private Box box;
 
   private static final float NINE_STONEMODIFIER = (float)67/615;
@@ -167,12 +167,12 @@ public class BoardFragment extends Fragment
   }
 
   private void placeStone(BoxCoords coords) {
-    Moves.Stone stone = moves.new Stone(coords, currentColor);
+    Stone stone = new Stone(getActivity(), coords, currentColor);
     moves.add(stone);
     renderStone(stone);
   }
 
-  private void renderStone(Moves.Stone stone) {
+  private void renderStone(Stone stone) {
     RelativeLayout.LayoutParams layout =
         new RelativeLayout.LayoutParams(stoneWidth, stoneWidth);
 
@@ -208,7 +208,7 @@ public class BoardFragment extends Fragment
   }
 
   private void addCursor() {
-    cursor = moves.new Stone(new BoxCoords(-1, -1), currentColor);
+    cursor = new Stone(getActivity(), new BoxCoords(-1, -1), currentColor);
     renderStone(cursor);
     cursor.setAlpha(0.7f);
 
@@ -250,7 +250,7 @@ public class BoardFragment extends Fragment
               .show();
       return;
     }
-    Moves.Stone lastStone = moves.pop();
+    Stone lastStone = moves.pop();
     board.removeView(lastStone);
     Toast.makeText(getActivity(),
             lastStone.color == StoneColor.BLACK ?

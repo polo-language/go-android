@@ -1,8 +1,13 @@
 package com.pololanguage.pologo;
 
+/**
+ * Holds zero-indexed game position coordinates
+ * <p>
+ *   (i.e. 0-8, 0-12, or 0-18, not pixel offsets)
+ *   Coordinate of -1 used to indicate stone is off of the board
+ * </p>
+ */
 public class BoxCoords {
-  // Holds zero-indexed game position coordinates (i.e. 0-8, 0-12, or 0-18, not pixel offsets)
-  // Coordinates of -1 indicates off-board
   int x, y;
 
   BoxCoords(int x, int y) {

@@ -7,9 +7,18 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
-
+/**
+ * Holds all moves made in a given game
+ */
 public class Moves {
+  /**
+   * Stores stones in the order they were placed on the board
+   */
   private ArrayList<Stone> stones = new ArrayList<>();
+
+  /**
+   * Provides 'indexed' access to board locations already taken by placed stones
+   */
   private Set<BoxCoords> filledCoords = new HashSet<>();
 //  private int boardSize;
 //  Context context;
@@ -43,6 +52,10 @@ public class Moves {
     return filledCoords.contains(coords);
   }
 
+  /**
+   * Serializes current state of stones on the board
+   * @return JSON array of StoredMove(s)
+   */
   String toJson() {
     int numMoves = stones.size();
     StoredMove[] moveArray = new StoredMove[numMoves];

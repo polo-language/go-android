@@ -1,5 +1,8 @@
 package com.pololanguage.pologo;
 
+/**
+ * Stone color class; includes reference to drawable resource
+ */
 enum StoneColor {
   BLACK (R.drawable.stone_black),
   WHITE (R.drawable.stone_white);

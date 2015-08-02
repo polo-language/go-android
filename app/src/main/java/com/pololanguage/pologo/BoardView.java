@@ -7,6 +7,9 @@ import android.graphics.Paint;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 
+/**
+ * RelativeLayout managing the board's visual state
+ */
 public class BoardView extends RelativeLayout {
   float lineWidth;
   int[] xCoords;

@@ -10,8 +10,8 @@ import android.os.Bundle;
 public class QuitDialogFragment extends DialogFragment {
 
   public interface QuitDialogListener {
-    public void onDialogPositiveClick();
-    public void onDialogNegativeClick();
+    void onDialogPositiveClick();
+    void onDialogNegativeClick();
   }
 
   QuitDialogListener listener;

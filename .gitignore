@@ -6,3 +6,5 @@
 /build
 /release
 /temp
+*.swp
+

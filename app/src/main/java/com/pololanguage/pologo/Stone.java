@@ -11,7 +11,6 @@ import android.widget.RelativeLayout;
 public class Stone extends View {
   BoxCoords coords;
   StoneColor color;
-  // Group group;
 
   Stone(Context context, BoxCoords coords, StoneColor color) {
     super(context);

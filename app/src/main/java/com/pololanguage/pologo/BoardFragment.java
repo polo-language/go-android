@@ -25,7 +25,7 @@ public class BoardFragment extends Fragment
   private boolean firstTouch = true;
   private boolean firstPass = false;
   private StoneColor currentColor;
-  private Moves moves;
+  private ChainManager chainManager;
   private RelativeLayout board;
   private Stone cursor;
   private Box box;
@@ -60,7 +60,7 @@ public class BoardFragment extends Fragment
     super.onCreate(savedInstanceState);
     setRetainInstance(true);
     DisplayMetrics displayMetrics = getActivity().getResources().getDisplayMetrics();
-    moves = new Moves(getActivity(), boardSize);
+    chainManager = new ChainManager();
     boardWidth = Math.min(displayMetrics.widthPixels, displayMetrics.heightPixels);
     handleBoardSize();
     setCoordinateArrays();
@@ -168,7 +168,7 @@ public class BoardFragment extends Fragment
 
   private void placeStone(BoxCoords coords) {
     Stone stone = new Stone(getActivity(), coords, currentColor);
-    moves.add(stone);
+    chainManager.addStone(stone);
     renderStone(stone);
   }
 
@@ -245,12 +245,12 @@ public class BoardFragment extends Fragment
   //////////////////////////////////
   // BUTTON onClick LISTENERS
   public void undo() {
-    if (moves.isEmpty()) {
+    if (chainManager.hasNoMoves()) {
       Toast.makeText(getActivity(), R.string.no_moves_to_undo, Toast.LENGTH_LONG)
               .show();
       return;
     }
-    Stone lastStone = moves.pop();
+    Stone lastStone = chainManager.popStone();
     board.removeView(lastStone);
     Toast.makeText(getActivity(),
             lastStone.color == StoneColor.BLACK ?
@@ -283,7 +283,7 @@ public class BoardFragment extends Fragment
 
   public void reset() {
     board.removeAllViews();
-    moves.reset();
+    chainManager.reset();
     board.setOnTouchListener(this);
     getActivity().findViewById(R.id.undo_button).setEnabled(true);
     getActivity().findViewById(R.id.pass_button).setEnabled(true);
@@ -296,7 +296,7 @@ public class BoardFragment extends Fragment
   String getJson() {
     return "{\"" + BoardActivity.CURRENT_COLOR_NAME + "\":\"" + currentColor + "\",\"" +
         BoardActivity.BOARD_SIZE_NAME + "\":" + boardSize + ",\"" +
-        BoardActivity.BOARD_NAME + "\":" + moves.toJson() + "}";
+        BoardActivity.BOARD_NAME + "\":" + chainManager.toJson() + "}";
   }
 
   //////////////////////////////////
@@ -333,7 +333,7 @@ public class BoardFragment extends Fragment
 
     private void snapToGrid(int x, int y) {
       BoxCoords newBoxCoords = getNearestGridCoords(x, y);
-      if (moves.contains(newBoxCoords)) { return; }
+      if (chainManager.taken(newBoxCoords)) { return; }
       setCoords(newBoxCoords);
     }
   }

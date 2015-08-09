@@ -18,15 +18,12 @@ public class BoardFragment extends Fragment
   private int handicap;
   private int boardWidth;
   private int stoneWidth;
-  private int margin;
   private StoredMove[] storedMoves;
-  private int[] xCoords;
-  private int[] yCoords;
   private boolean firstTouch = true;
   private boolean firstPass = false;
   private StoneColor currentColor;
   private ChainManager chainManager;
-  private RelativeLayout board;
+  private BoardView board;
   private Stone cursor;
   private Box box;
 
@@ -63,7 +60,6 @@ public class BoardFragment extends Fragment
     chainManager = new ChainManager();
     boardWidth = Math.min(displayMetrics.widthPixels, displayMetrics.heightPixels);
     handleBoardSize();
-    setCoordinateArrays();
   }
 
   private void handleBoardSize() {
@@ -80,22 +76,12 @@ public class BoardFragment extends Fragment
       default:
         Log.e("Board#handleBoardSize", "Incorrect board size (not 9, 13, or 19).");
     }
-    margin = Math.round((boardWidth - boardSize*stoneWidth) / 2);
-  }
-
-  private void setCoordinateArrays() {
-    xCoords = new int[boardSize];
-    yCoords = new int[boardSize];
-    for(int i = 0; i < boardSize; ++i) {
-      xCoords[i] = margin + i*stoneWidth;
-      yCoords[i] = margin + i*stoneWidth;
-    }
   }
 
   @Override
   public View onCreateView(LayoutInflater inflater,
                            ViewGroup container, Bundle savedInstanceState) {
-    board = BoardView.newInstance(getActivity(), xCoords, yCoords);
+    board = BoardView.newInstance(getActivity(), boardSize, boardWidth, stoneWidth);
     return board;
   }
 
@@ -169,22 +155,7 @@ public class BoardFragment extends Fragment
   private void placeStone(BoxCoords coords) {
     Stone stone = new Stone(getActivity(), coords, currentColor);
     chainManager.addStone(stone);
-    renderStone(stone);
-  }
-
-  private void renderStone(Stone stone) {
-    RelativeLayout.LayoutParams layout =
-        new RelativeLayout.LayoutParams(stoneWidth, stoneWidth);
-
-    stone.setLayoutParams(layout);
-
-    if (stone.coords.x < 0 || stone.coords.y < 0) {
-      stone.move(-200, -200); // place stone off-board
-    } else {
-      stone.move(xCoords[stone.coords.x], yCoords[stone.coords.y]);
-    }
-
-    board.addView(stone);
+    board.renderStone(stone);
   }
 
   @Override
@@ -201,18 +172,29 @@ public class BoardFragment extends Fragment
         newX = X - stoneWidth/2;
         newY = Y - stoneWidth/2;
         cursor.move(newX, newY);
-        box.snapToGrid(newX, newY);
+        snapBoxToGrid(newX, newY);
         break;
     }
     return true;
   }
 
+  private void snapBoxToGrid(int x, int y) {
+    BoxCoords coords = board.getNearestGridCoords(x, y);
+    if (!chainManager.taken(coords)) {
+      box.setCoords(coords);
+      board.setViewMargins(box, coords);
+    }
+  }
+
   private void addCursor() {
     cursor = new Stone(getActivity(), new BoxCoords(-1, -1), currentColor);
-    renderStone(cursor);
+    board.renderStone(cursor);
     cursor.setAlpha(0.7f);
 
-    box = new Box();
+    box = new Box(getActivity() , stoneWidth);
+    board.renderBox(box);
+    box.setOnClickListener(new BoxClickListener());
+
     firstTouch = false;
   }
 
@@ -222,25 +204,6 @@ public class BoardFragment extends Fragment
     firstTouch = true;
   }
 
-  private BoxCoords getNearestGridCoords(int x, int y) {
-    int minX = Integer.MAX_VALUE;
-    int minY = Integer.MAX_VALUE;
-    int argminX = 0;
-    int argminY = 0;
-    for (int i = 0; i < xCoords.length; ++i) {
-      int diffX = Math.abs(xCoords[i] - x);
-      int diffY = Math.abs(yCoords[i] - y);
-      if (diffX < minX) {
-        minX = diffX;
-        argminX = i;
-      }
-      if (diffY < minY) {
-        minY = diffY;
-        argminY = i;
-      }
-    }
-    return new BoxCoords(argminX, argminY);
-  }
 
   //////////////////////////////////
   // BUTTON onClick LISTENERS
@@ -301,43 +264,6 @@ public class BoardFragment extends Fragment
 
   //////////////////////////////////
   // INNER CLASSES:
-  private class Box extends View {
-    BoxCoords coords;
-
-    Box() {
-      super(BoardFragment.this.getActivity());
-      coords = new BoxCoords(-1, -1);
-      RelativeLayout.LayoutParams boxParams =
-              new RelativeLayout.LayoutParams(stoneWidth, stoneWidth);
-      boxParams.leftMargin = -200;
-      boxParams.topMargin = -200;
-      setLayoutParams(boxParams);
-      setBackgroundResource(R.drawable.box);
-      setOnClickListener(new BoxClickListener());
-      board.addView(this);
-    }
-
-    BoxCoords getCoords() {
-      return coords;
-    }
-
-    private void setCoords(BoxCoords boxCoords) {
-      coords.x = boxCoords.x;
-      coords.y = boxCoords.y;
-      RelativeLayout.LayoutParams boxParams =
-              (RelativeLayout.LayoutParams) getLayoutParams();
-      boxParams.leftMargin = xCoords[boxCoords.x];
-      boxParams.topMargin = yCoords[boxCoords.y];
-      setLayoutParams(boxParams);
-    }
-
-    private void snapToGrid(int x, int y) {
-      BoxCoords newBoxCoords = getNearestGridCoords(x, y);
-      if (chainManager.taken(newBoxCoords)) { return; }
-      setCoords(newBoxCoords);
-    }
-  }
-
   private class BoxClickListener implements View.OnClickListener {
     @Override
     public void onClick(View view) {

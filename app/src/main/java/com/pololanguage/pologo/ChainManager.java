@@ -8,6 +8,7 @@ import java.util.Map;
 
 
 /**
+ * Manages all game-play (i.e. non-visual) aspects of stone handling
  * Manages creation, updating, and removal of chains of like-colored stones
  */
 public class ChainManager {

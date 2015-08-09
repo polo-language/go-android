@@ -12,19 +12,13 @@ import java.util.Map;
  * Manages creation, updating, and removal of chains of like-colored stones
  */
 public class ChainManager {
-  /**
-   * Holds all chains on the board
-   */
+  /** Holds all chains on the board */
   private Set<Chain> chains;
 
-  /**
-   * Track filled coordinates and map them to stone's containing chain
-   */
+  /** Track filled coordinates and map them to the chain covering that location*/
   private Map<BoxCoords, Chain> filled;
 
-  /**
-   * Track moves
-   */
+  /** Track moves */
   private Moves moves;
 
   ChainManager() {
@@ -79,7 +73,7 @@ public class ChainManager {
    * Reset to empty board
    */
   void reset() {
-    moves.reset();
+    moves.clear();
     filled.clear();
   }
 

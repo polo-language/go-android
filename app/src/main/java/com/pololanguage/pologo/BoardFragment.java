@@ -17,13 +17,19 @@ public class BoardFragment extends Fragment
   private int handicap;
   private int boardWidth;
 
-  /** Holds saved state read from file during board setup */
+  /**
+   * Holds saved state read from file during board setup
+   */
   private StoredMove[] storedMoves;
 
-  /** Tracks sequential passes (two passes in a row ends the game) */
+  /**
+   * Tracks sequential passes (two passes in a row ends the game)
+   */
   private boolean firstPass = false;
 
-  /** Used to add cursor and box only if not already on board */
+  /**
+   * Used to add cursor and box only if not already on board
+   */
   private boolean firstTouch = true;
 
   private StoneColor currentColor;
@@ -32,7 +38,9 @@ public class BoardFragment extends Fragment
   private Stone cursor;
   private Box box;
 
-  /** Standard handicap board coordinates */
+  /**
+   * Standard handicap board coordinates
+   */
   private static final BoxCoords[] NINE_HANDICAPS = {new BoxCoords(6, 2), new BoxCoords(2, 6), new BoxCoords(6, 6), new BoxCoords(2, 2), new BoxCoords(4, 4)};
   private static final BoxCoords[] THIRTEEN_HANDICAPS = {new BoxCoords(9, 3), new BoxCoords(3, 9), new BoxCoords(9, 9), new BoxCoords(3, 3), new BoxCoords(6, 6)};
   private static final BoxCoords[] NINETEEN_HANDICAPS = {new BoxCoords(15, 3), new BoxCoords(3, 15), new BoxCoords(15, 15), new BoxCoords(3, 3), new BoxCoords(9, 9)};
@@ -102,21 +110,23 @@ public class BoardFragment extends Fragment
     View boardContainer = getActivity().findViewById(R.id.board_container);
 
     RelativeLayout.LayoutParams layoutParams =
-            new RelativeLayout.LayoutParams(boardWidth, boardWidth);
+        new RelativeLayout.LayoutParams(boardWidth, boardWidth);
     layoutParams.addRule(RelativeLayout.CENTER_VERTICAL);
     boardContainer.setLayoutParams(layoutParams);
   }
 
   private void addHandicapStones() {
-    if (handicap == 0) { return; }
+    if (handicap == 0) {
+      return;
+    }
 
     BoxCoords[] handicaps;
-    switch(boardSize) {
+    switch (boardSize) {
       case 9:
         handicaps = NINE_HANDICAPS;
         break;
       case 13:
-        handicaps =  THIRTEEN_HANDICAPS;
+        handicaps = THIRTEEN_HANDICAPS;
         break;
       case 19:
         handicaps = NINETEEN_HANDICAPS;
@@ -131,7 +141,7 @@ public class BoardFragment extends Fragment
     currentColor = StoneColor.WHITE;
   }
 
-  private void placeStoredMoves () {
+  private void placeStoredMoves() {
     for (StoredMove move : storedMoves) {
       currentColor = move.color;
       placeStone(new BoxCoords(move.x, move.y));
@@ -154,7 +164,9 @@ public class BoardFragment extends Fragment
     final int x = (int) event.getX();
     final int y = (int) event.getY();
 
-    if (firstTouch) { addCursor(); }
+    if (firstTouch) {
+      addCursor();
+    }
 
     switch (event.getActionMasked()) {
       case MotionEvent.ACTION_DOWN: // intentional fall-through
@@ -192,6 +204,9 @@ public class BoardFragment extends Fragment
     firstTouch = true;
   }
 
+  void toggleColor() {
+    currentColor = currentColor.getOther();
+  }
 
   //////////////////////////////////
   // BUTTON onClick LISTENERS
@@ -203,6 +218,8 @@ public class BoardFragment extends Fragment
     }
     Stone lastStone = chainManager.popStone();
     board.removeView(lastStone);
+    removeCursor();
+    toggleColor();
     Toast.makeText(getActivity(),
             lastStone.color == StoneColor.BLACK ?
                     R.string.undo_black : R.string.undo_white,
@@ -219,7 +236,7 @@ public class BoardFragment extends Fragment
             currentColor == StoneColor.BLACK ?
                     R.string.pass_black : R.string.pass_white,
             Toast.LENGTH_SHORT).show();
-    currentColor = currentColor.getOther();
+    toggleColor();
     firstPass = true;
   }
 

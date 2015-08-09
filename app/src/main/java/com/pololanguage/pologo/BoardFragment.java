@@ -3,7 +3,6 @@ package com.pololanguage.pologo;
 import android.app.Fragment;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -17,7 +16,6 @@ public class BoardFragment extends Fragment
   private int boardSize;
   private int handicap;
   private int boardWidth;
-  private int stoneWidth;
 
   /** Holds saved state read from file during board setup */
   private StoredMove[] storedMoves;
@@ -33,11 +31,6 @@ public class BoardFragment extends Fragment
   private BoardView board;
   private Stone cursor;
   private Box box;
-
-  /** Stones scaling factors by board size */
-  private static final float NINE_STONEMODIFIER = (float)67/615;
-  private static final float THIRTEEN_STONEMODIFIER = (float)46/615;
-  private static final float NINETEEN_STONEMODIFIER = (float)31/615;
 
   /** Standard handicap board coordinates */
   private static final BoxCoords[] NINE_HANDICAPS = {new BoxCoords(6, 2), new BoxCoords(2, 6), new BoxCoords(6, 6), new BoxCoords(2, 2), new BoxCoords(4, 4)};
@@ -68,29 +61,18 @@ public class BoardFragment extends Fragment
     DisplayMetrics displayMetrics = getActivity().getResources().getDisplayMetrics();
     chainManager = new ChainManager();
     boardWidth = Math.min(displayMetrics.widthPixels, displayMetrics.heightPixels);
-    handleBoardSize();
-  }
-
-  private void handleBoardSize() {
-    switch (boardSize) {
-      case 9:
-        stoneWidth = Math.round(boardWidth * NINE_STONEMODIFIER);
-        break;
-      case 13:
-        stoneWidth = Math.round(boardWidth * THIRTEEN_STONEMODIFIER);
-        break;
-      case 19:
-        stoneWidth = Math.round(boardWidth * NINETEEN_STONEMODIFIER);
-        break;
-      default:
-        Log.e("Board#handleBoardSize", "Incorrect board size (not 9, 13, or 19).");
-    }
   }
 
   @Override
   public View onCreateView(LayoutInflater inflater,
                            ViewGroup container, Bundle savedInstanceState) {
-    board = BoardView.newInstance(getActivity(), boardSize, boardWidth, stoneWidth);
+    try {
+      board = BoardView.newInstance(getActivity(), boardSize, boardWidth);
+    } catch (IllegalArgumentException e) {
+      Toast.makeText(getActivity(), R.string.application_error, Toast.LENGTH_LONG)
+          .show();
+      getActivity().finish();
+    }
     return board;
   }
 
@@ -197,8 +179,8 @@ public class BoardFragment extends Fragment
     board.renderStone(cursor);
     cursor.setAlpha(0.7f);
 
-    box = new Box(getActivity() , stoneWidth);
-    board.addView(box);
+    box = new Box(getActivity());
+    board.renderBox(box);
     box.setOnClickListener(new BoxClickListener());
 
     firstTouch = false;

@@ -19,28 +19,34 @@ public class BoardView extends RelativeLayout {
   private int stoneWidth;
   private int margin;
 
-  protected static BoardView newInstance(Context context, int boardSize,
-                                         int boardWidth, int stoneWidth) {
-    BoardView boardView = new BoardView(context);
-    boardView.margin = Math.round((boardWidth - boardSize*stoneWidth) / 2);
-    boardView.stoneWidth = stoneWidth;
+  /** Stones scaling factors by board size */
+  private static final float NINE_STONE_MODIFIER = (float)67/615;
+  private static final float THIRTEEN_STONE_MODIFIER = (float)46/615;
+  private static final float NINETEEN_STONE_MODIFIER = (float)31/615;
 
+  protected static BoardView newInstance(Context context, int boardSize, int boardWidth) {
+    BoardView boardView = new BoardView(context);
     boardView.setId(R.id.board);
-    boardView.buildCoordinateArrays(boardSize, stoneWidth);
+
     switch (boardSize) {
       case 9:
         boardView.lineWidth = 5.0f;
+        boardView.stoneWidth = Math.round(boardWidth * NINE_STONE_MODIFIER);
         break;
       case 13:
         boardView.lineWidth = 4.0f;
+        boardView.stoneWidth = Math.round(boardWidth * THIRTEEN_STONE_MODIFIER);
         break;
       case 19:
         boardView.lineWidth = 3.0f;
+        boardView.stoneWidth = Math.round(boardWidth * NINETEEN_STONE_MODIFIER);
         break;
       default:
-        boardView.lineWidth = 4.0f;
-        break;
+        throw new IllegalArgumentException("Incorrect board size (not 9, 13, or 19).");
     }
+
+    boardView.margin = Math.round((boardWidth - boardSize*boardView.stoneWidth) / 2);
+    boardView.buildCoordinateArrays(boardSize, boardView.stoneWidth);
 
     boardView.paint.setColor(Color.BLACK);
     boardView.paint.setStrokeWidth(boardView.lineWidth);
@@ -103,6 +109,16 @@ public class BoardView extends RelativeLayout {
     addView(stone);
   }
 
+  void renderBox(View box) {
+    RelativeLayout.LayoutParams params =
+        new RelativeLayout.LayoutParams(stoneWidth, stoneWidth);
+    params.leftMargin = -200;
+    params.topMargin = -200;
+    box.setLayoutParams(params);
+
+    addView(box);
+  }
+
   /** Pushes supplied view out to the given coordinates */
   void setViewMargins(View view, BoxCoords coords) {
     RelativeLayout.LayoutParams boxParams =
@@ -114,7 +130,7 @@ public class BoardView extends RelativeLayout {
 
   /** Shifts top left of supplied stone's coordinates by half a stone width from x and y */
   void centerStoneOnClick(Stone stone, int x, int y) {
-    stone.move(x - stoneWidth/2, y - stoneWidth/2);
+    stone.move(x - stoneWidth / 2, y - stoneWidth / 2);
   }
 
   /**

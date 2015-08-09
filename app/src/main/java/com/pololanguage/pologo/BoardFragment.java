@@ -95,12 +95,15 @@ public class BoardFragment extends Fragment
   @Override
   public View onCreateView(LayoutInflater inflater,
                            ViewGroup container, Bundle savedInstanceState) {
-    return BoardView.newInstance(getActivity(), xCoords, yCoords);
+    board = BoardView.newInstance(getActivity(), xCoords, yCoords);
+    return board;
   }
 
   @Override
   public void onViewCreated(View view, Bundle savedInstanceState) {
     layoutBoard();
+    board.setOnTouchListener(this);
+
     if (storedMoves == null) {
       addHandicapStones();
     } else {
@@ -125,9 +128,6 @@ public class BoardFragment extends Fragment
             new RelativeLayout.LayoutParams(boardWidth, boardWidth);
     layoutParams.addRule(RelativeLayout.CENTER_VERTICAL);
     boardContainer.setLayoutParams(layoutParams);
-
-    board = (RelativeLayout)getActivity().findViewById(R.id.board);
-    board.setOnTouchListener(this);
   }
 
   private void addHandicapStones() {

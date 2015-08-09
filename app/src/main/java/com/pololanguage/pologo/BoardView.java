@@ -15,17 +15,18 @@ public class BoardView extends RelativeLayout {
   int[] xCoords;
   int[] yCoords;
   Paint paint = new Paint();
+  private int stoneHalfWidth;
 
   protected static BoardView newInstance(Context context, int[] xCoords, int[] yCoords) {
-    int stoneHalfWidth = (xCoords[1] - xCoords[0]) / 2;
     BoardView boardView = new BoardView(context);
+    boardView.stoneHalfWidth = (xCoords[1] - xCoords[0]) / 2;
 
     boardView.setId(R.id.board);
     boardView.xCoords = new int[xCoords.length];
     boardView.yCoords = new int[xCoords.length];
     for (int i = 0; i < boardView.xCoords.length; ++i) {
-      boardView.xCoords[i] = xCoords[i] + stoneHalfWidth;
-      boardView.yCoords[i] = yCoords[i] + stoneHalfWidth;
+      boardView.xCoords[i] = xCoords[i];
+      boardView.yCoords[i] = yCoords[i];
     }
     switch (xCoords.length) {
       case 9:
@@ -57,11 +58,17 @@ public class BoardView extends RelativeLayout {
     super(context);
   }
 
+  /**
+   * Draws grid lines on the board. Lines are shifted half a stone's width to center under stones.
+   * @param canvas
+   */
   @Override
   public void onDraw(Canvas canvas) {
     for (int i = 0; i < xCoords.length; ++i) {
-      canvas.drawLine(xCoords[i], yCoords[0], xCoords[i], yCoords[xCoords.length - 1], paint);
-      canvas.drawLine(xCoords[0], yCoords[i], xCoords[xCoords.length - 1], yCoords[i], paint);
+      canvas.drawLine(xCoords[i] + stoneHalfWidth, yCoords[0] + stoneHalfWidth,
+                      xCoords[i] + stoneHalfWidth, yCoords[xCoords.length - 1] + stoneHalfWidth, paint);
+      canvas.drawLine(xCoords[0] + stoneHalfWidth, yCoords[i] + stoneHalfWidth,
+                      xCoords[xCoords.length - 1] + stoneHalfWidth, yCoords[i] + stoneHalfWidth, paint);
     }
   }
 }

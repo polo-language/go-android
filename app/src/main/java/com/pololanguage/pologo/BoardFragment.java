@@ -169,19 +169,16 @@ public class BoardFragment extends Fragment
 
   @Override
   public boolean onTouch(View view, MotionEvent event) {
-    final int X = (int) event.getX();
-    final int Y = (int) event.getY();
-    int newX, newY;
+    final int x = (int) event.getX();
+    final int y = (int) event.getY();
 
     if (firstTouch) { addCursor(); }
 
     switch (event.getActionMasked()) {
       case MotionEvent.ACTION_DOWN: // intentional fall-through
       case MotionEvent.ACTION_MOVE:
-        newX = X - stoneWidth/2;
-        newY = Y - stoneWidth/2;
-        cursor.move(newX, newY);
-        snapBoxToGrid(newX, newY);
+        board.centerStoneOnClick(cursor, x, y);
+        snapBoxToGrid(x, y);
         break;
     }
     return true;
@@ -201,7 +198,7 @@ public class BoardFragment extends Fragment
     cursor.setAlpha(0.7f);
 
     box = new Box(getActivity() , stoneWidth);
-    board.renderBox(box);
+    board.addView(box);
     box.setOnClickListener(new BoxClickListener());
 
     firstTouch = false;

@@ -103,10 +103,7 @@ public class BoardView extends RelativeLayout {
     addView(stone);
   }
 
-  void renderBox(Box box) {
-    addView(box);
-  }
-
+  /** Pushes supplied view out to the given coordinates */
   void setViewMargins(View view, BoxCoords coords) {
     RelativeLayout.LayoutParams boxParams =
         (RelativeLayout.LayoutParams) view.getLayoutParams();
@@ -115,24 +112,28 @@ public class BoardView extends RelativeLayout {
     view.setLayoutParams(boxParams);
   }
 
-  void centerCursorOnClick() {}
+  /** Shifts top left of supplied stone's coordinates by half a stone width from x and y */
+  void centerStoneOnClick(Stone stone, int x, int y) {
+    stone.move(x - stoneWidth/2, y - stoneWidth/2);
+  }
 
-  /** Returns the board position closest to the supplied pixel coordinates */
+  /**
+   * Returns the board position closest to the supplied pixel coordinates
+   * Does so by finding index of largest grid coordinate smaller than the supplied click for x and y
+   * */
   BoxCoords getNearestGridCoords(int x, int y) {
-    int minX = Integer.MAX_VALUE;
-    int minY = Integer.MAX_VALUE;
-    int argminX = 0;
-    int argminY = 0;
-    for (int i = 0; i < xCoords.length; ++i) {
-      int diffX = Math.abs(xCoords[i] - x);
-      int diffY = Math.abs(yCoords[i] - y);
-      if (diffX < minX) {
-        minX = diffX;
+    int argminX = 0; // default
+    int argminY = 0; // default
+    for (int i = xCoords.length - 1; i > 0; --i) {
+      if (x > xCoords[i]) {
         argminX = i;
+        break;
       }
-      if (diffY < minY) {
-        minY = diffY;
+    }
+    for (int i = yCoords.length - 1; i > 0; --i) {
+      if (y > yCoords[i]) {
         argminY = i;
+        break;
       }
     }
     return new BoxCoords(argminX, argminY);

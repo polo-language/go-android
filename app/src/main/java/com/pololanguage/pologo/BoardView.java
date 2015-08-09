@@ -15,7 +15,7 @@ public class BoardView extends RelativeLayout {
   float lineWidth;
   private int[] xCoords;
   private int[] yCoords;
-  Paint paint = new Paint();
+  private Paint paint = new Paint();
   private int stoneWidth;
   private int margin;
 
@@ -114,6 +114,8 @@ public class BoardView extends RelativeLayout {
     boxParams.topMargin = yCoords[coords.y];
     view.setLayoutParams(boxParams);
   }
+
+  void centerCursorOnClick() {}
 
   /** Returns the board position closest to the supplied pixel coordinates */
   BoxCoords getNearestGridCoords(int x, int y) {

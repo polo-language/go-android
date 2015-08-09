@@ -18,19 +18,28 @@ public class BoardFragment extends Fragment
   private int handicap;
   private int boardWidth;
   private int stoneWidth;
+
+  /** Holds saved state read from file during board setup */
   private StoredMove[] storedMoves;
-  private boolean firstTouch = true;
+
+  /** Tracks sequential passes (two passes in a row ends the game) */
   private boolean firstPass = false;
+
+  /** Used to add cursor and box only if not already on board */
+  private boolean firstTouch = true;
+
   private StoneColor currentColor;
   private ChainManager chainManager;
   private BoardView board;
   private Stone cursor;
   private Box box;
 
+  /** Stones scaling factors by board size */
   private static final float NINE_STONEMODIFIER = (float)67/615;
   private static final float THIRTEEN_STONEMODIFIER = (float)46/615;
   private static final float NINETEEN_STONEMODIFIER = (float)31/615;
 
+  /** Standard handicap board coordinates */
   private static final BoxCoords[] NINE_HANDICAPS = {new BoxCoords(6, 2), new BoxCoords(2, 6), new BoxCoords(6, 6), new BoxCoords(2, 2), new BoxCoords(4, 4)};
   private static final BoxCoords[] THIRTEEN_HANDICAPS = {new BoxCoords(9, 3), new BoxCoords(3, 9), new BoxCoords(9, 9), new BoxCoords(3, 3), new BoxCoords(6, 6)};
   private static final BoxCoords[] NINETEEN_HANDICAPS = {new BoxCoords(15, 3), new BoxCoords(3, 15), new BoxCoords(15, 15), new BoxCoords(3, 3), new BoxCoords(9, 9)};

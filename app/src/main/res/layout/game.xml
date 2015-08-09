@@ -12,7 +12,7 @@
         android:layout_alignParentTop="true"
         android:gravity="center"
         android:textSize="30sp"
-        android:textColor="#ff851531"
+        android:textColor="@color/game_over"
         android:visibility="invisible"
         android:text="@string/game_over" />
 

@@ -20,4 +20,5 @@
     <string name="new_game">New Game</string>
     <string name="quit">Save \u0026 Quit</string>
     <string name="application_error">Error in the application!</string>
+    <string name="no_suicide">Disallowed: no suicide</string>
 </resources>

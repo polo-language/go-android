@@ -1,8 +1,9 @@
 package com.pololanguage.pologo;
 
+
 import android.content.Context;
 import android.view.View;
-import android.widget.RelativeLayout;
+
 
 /**
  * Manages the coordinates and view showing where the next stone would be if placed on the board

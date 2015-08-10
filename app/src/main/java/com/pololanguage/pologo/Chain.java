@@ -4,10 +4,11 @@ package com.pololanguage.pologo;
 import java.util.HashSet;
 import java.util.Set;
 
+
 /** Track a single-color chain of stones */
 public class Chain {
   private Set<Stone> stones;
-  private StoneColor color;
+  StoneColor color;
   private Set<BoxCoords> liberties;
 
   Chain() {

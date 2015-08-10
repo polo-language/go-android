@@ -1,5 +1,6 @@
 package com.pololanguage.pologo;
 
+
 import android.app.Fragment;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
@@ -10,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 import com.google.gson.Gson;
+
 
 public class BoardFragment extends Fragment
                            implements View.OnTouchListener {
@@ -77,8 +79,7 @@ public class BoardFragment extends Fragment
     try {
       board = BoardView.newInstance(getActivity(), boardSize, boardWidth);
     } catch (IllegalArgumentException e) {
-      Toast.makeText(getActivity(), R.string.application_error, Toast.LENGTH_LONG)
-          .show();
+      Toast.makeText(getActivity(), R.string.application_error, Toast.LENGTH_LONG).show();
       getActivity().finish();
     }
     return board;
@@ -155,7 +156,9 @@ public class BoardFragment extends Fragment
 
   private void placeStone(BoxCoords coords) {
     Stone stone = new Stone(getActivity(), coords, currentColor);
-    chainManager.addStone(stone);
+    if (!chainManager.addStone(stone)) {
+      Toast.makeText(getActivity(), R.string.no_suicide, Toast.LENGTH_LONG).show();
+    }
     board.renderStone(stone);
   }
 
@@ -212,8 +215,7 @@ public class BoardFragment extends Fragment
   // BUTTON onClick LISTENERS
   public void undo() {
     if (chainManager.hasNoMoves()) {
-      Toast.makeText(getActivity(), R.string.no_moves_to_undo, Toast.LENGTH_LONG)
-              .show();
+      Toast.makeText(getActivity(), R.string.no_moves_to_undo, Toast.LENGTH_LONG).show();
       return;
     }
     Stone lastStone = chainManager.popStone();

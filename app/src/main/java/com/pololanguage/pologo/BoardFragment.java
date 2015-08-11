@@ -156,10 +156,14 @@ public class BoardFragment extends Fragment
 
   private void placeStone(BoxCoords coords) {
     Stone stone = new Stone(getActivity(), coords, currentColor);
-    if (!chainManager.addStone(stone)) {
+    if (chainManager.addStone(stone)) {
+      board.renderStone(stone);
+      toggleColor();
+      removeCursor();
+      firstPass = false;
+    } else {
       Toast.makeText(getActivity(), R.string.no_suicide, Toast.LENGTH_LONG).show();
     }
-    board.renderStone(stone);
   }
 
   @Override
@@ -275,9 +279,6 @@ public class BoardFragment extends Fragment
     @Override
     public void onClick(View view) {
       placeStoneAtBoxCoords();
-      removeCursor();
-      currentColor = currentColor.getOther();
-      firstPass = false;
     }
   }
 }

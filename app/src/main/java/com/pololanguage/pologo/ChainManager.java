@@ -13,13 +13,19 @@ import java.util.Map;
  * Manages creation, updating, and removal of chains of like-colored stones
  */
 public class ChainManager {
-  /** Holds all chains on the board */
+  /**
+   * Holds all chains on the board
+   */
   private Set<Chain> chains;
 
-  /** Track filled coordinates and map them to the chain covering that location*/
+  /**
+   * Track filled coordinates and map them to the chain covering that location
+   */
   private Map<BoxCoords, Chain> filled;
 
-  /** Track moves in order */
+  /**
+   * Track moves in order
+   */
   private Moves moves;
 
   ChainManager() {
@@ -28,12 +34,16 @@ public class ChainManager {
     moves = new Moves();
   }
 
-  /** Returns true if the supplied coordinates are occupied by a stone */
+  /**
+   * Returns true if the supplied coordinates are occupied by a stone
+   */
   public boolean taken(BoxCoords coords) {
     return filled.containsKey(coords);
   }
 
-  /** Returns true if board contains no stones */
+  /**
+   * Returns true if board contains no stones
+   */
   public boolean hasNoMoves() {
     return filled.isEmpty();
   }
@@ -53,24 +63,19 @@ public class ChainManager {
     }
   }
 
-  /** Returns up to 4 chains connected to the supplied coordinates and of the given color */
+  /** Returns up to 4 chains neighboring the supplied coordinates and of the given color */
   private ArrayList<Chain> getNeighborChains(BoxCoords coords, StoneColor color) {
-    ArrayList<Chain> neighbors = new ArrayList<>();
+    NeighborChecker<Chain> neighborChecker = new NeighborChecker<>();
 
-    checkOneNeighborChain(neighbors, new BoxCoords(coords.x - 1, coords.y), color);
-    checkOneNeighborChain(neighbors, new BoxCoords(coords.x + 1, coords.y), color);
-    checkOneNeighborChain(neighbors, new BoxCoords(coords.x, coords.y - 1), color);
-    checkOneNeighborChain(neighbors, new BoxCoords(coords.x, coords.y + 1), color);
-
-    return neighbors;
-  }
-
-  private void checkOneNeighborChain(ArrayList<Chain> neighbors, BoxCoords coords, StoneColor color) {
-    try {
-      if (taken(coords) && filled.get(coords).color == color) {
-        neighbors.add(filled.get(coords));
+    return neighborChecker.getMatchingNeighbors(new CheckCoords<Chain>() {
+      public void check(ArrayList<Chain> found, BoxCoords coords, Object criterion) {
+        try {
+          if (taken(coords) && filled.get(coords).color == criterion) {
+            found.add(filled.get(coords));
+          }
+        } catch (IndexOutOfBoundsException e) { /* Do nothing: must be off the end of the board */ }
       }
-    } catch (IndexOutOfBoundsException e) { /* Do nothing: must be off the end of the board */ }
+    }, coords, color);
   }
 
   /** Checks for and removes opposing chains with this stone as their last liberty */
@@ -96,12 +101,20 @@ public class ChainManager {
         return false;
       }
     }
-    return getLiberties(stone.coords).size() > 0;
+    return getLiberties(stone.coords).size() == 0;
   }
 
+  /** Returns an ArrayList containing coordinates of any liberties of the given position */
   private ArrayList<BoxCoords> getLiberties(BoxCoords coords) {
-    // TODO
-    return new ArrayList<>();
+    NeighborChecker<BoxCoords> neighborChecker = new NeighborChecker<>();
+
+    return neighborChecker.getMatchingNeighbors(new CheckCoords<BoxCoords>() {
+      public void check(ArrayList<BoxCoords> neighbors, BoxCoords coords, Object dummy) {
+        if (!taken(coords)) {
+          neighbors.add(coords);
+        }
+      }
+    }, coords, null);
   }
 
   /**
@@ -130,8 +143,26 @@ public class ChainManager {
     filled.clear();
   }
 
-  String toJson() {
+  public String toJson() {
     return moves.toJson();
+  }
+
+  /** Class enabling checking of neighboring coordinates based on some criterion */
+  private class NeighborChecker<T> {
+    /** Returns an ArrayList of the neighbors that matched the criterion */
+    private ArrayList<T> getMatchingNeighbors(CheckCoords<T> checker, BoxCoords coords, Object criterion) {
+      ArrayList<T> neighbors = new ArrayList<>();
+      checker.check(neighbors, new BoxCoords(coords.x - 1, coords.y), criterion);
+      checker.check(neighbors, new BoxCoords(coords.x + 1, coords.y), criterion);
+      checker.check(neighbors, new BoxCoords(coords.x, coords.y - 1), criterion);
+      checker.check(neighbors, new BoxCoords(coords.x, coords.y + 1), criterion);
+      return neighbors;
+    }
+  }
+
+  /** Interface to be used as method argument to NeighborChecker class */
+  private interface CheckCoords<T> {
+    void check(ArrayList<T> found, BoxCoords coords, Object criterion);
   }
 }
 

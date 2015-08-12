@@ -137,9 +137,9 @@ public class BoardFragment extends Fragment
     }
 
     for (int i = 0; i < handicap; ++i) {
+      currentColor = StoneColor.BLACK;
       placeStone(handicaps[i]);
     }
-    currentColor = StoneColor.WHITE;
   }
 
   private void placeStoredMoves() {
@@ -222,12 +222,12 @@ public class BoardFragment extends Fragment
       Toast.makeText(getActivity(), R.string.no_moves_to_undo, Toast.LENGTH_LONG).show();
       return;
     }
-    Stone lastStone = chainManager.popStone();
-    board.removeView(lastStone);
+    Stone stone = chainManager.popStone();
+    board.removeView(stone);
     removeCursor();
     toggleColor();
     Toast.makeText(getActivity(),
-            lastStone.color == StoneColor.BLACK ?
+            stone.color == StoneColor.BLACK ?
                     R.string.undo_black : R.string.undo_white,
             Toast.LENGTH_SHORT).show();
   }

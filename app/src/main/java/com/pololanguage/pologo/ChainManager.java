@@ -13,19 +13,13 @@ import java.util.Map;
  * Manages creation, updating, and removal of chains of like-colored stones
  */
 public class ChainManager {
-  /**
-   * Holds all chains on the board
-   */
+  /** Holds all chains on the board */
   private Set<Chain> chains;
 
-  /**
-   * Track filled coordinates and map them to the chain covering that location
-   */
+  /** Track filled coordinates and map them to the chain covering that location */
   private Map<BoxCoords, Chain> filled;
 
-  /**
-   * Track moves in order
-   */
+  /** Track moves in order */
   private Moves moves;
 
   ChainManager() {
@@ -34,16 +28,12 @@ public class ChainManager {
     moves = new Moves();
   }
 
-  /**
-   * Returns true if the supplied coordinates are occupied by a stone
-   */
+  /** Returns true if the supplied coordinates are occupied by a stone */
   public boolean taken(BoxCoords coords) {
     return filled.containsKey(coords);
   }
 
-  /**
-   * Returns true if board contains no stones
-   */
+  /** Returns true if board contains no stones */
   public boolean hasNoMoves() {
     return filled.isEmpty();
   }
@@ -53,9 +43,11 @@ public class ChainManager {
    * Returns false if move would be suicide
    */
   public boolean addStone(Stone stone) {
+    ArrayList<Chain> friends = getNeighborChains(stone.coords, stone.color);
+
     killOpponents(stone);
-    if (!isSuicide(stone)) {
-      filled.put(stone.coords, mergeToChains(stone));
+    if (!isSuicide(friends, stone)) {
+      incorporateIntoChains(friends, stone);
       moves.add(stone);
       return true;
     } else {
@@ -94,8 +86,7 @@ public class ChainManager {
   }
 
   /** Returns true if stone can be added; false if move would be suicide */
-  private boolean isSuicide(Stone stone) {
-    ArrayList<Chain> friends = getNeighborChains(stone.coords, stone.color);
+  private boolean isSuicide(ArrayList<Chain> friends, Stone stone) {
     for (Chain chain : friends) {
       if (!chain.isLastLiberty(stone.coords)) {
         return false;
@@ -120,12 +111,30 @@ public class ChainManager {
   /**
    * Add stone to existing chain or creates new chain if not connected to any like-colored chains
    * Merges chains as necessary if new stone connects like-colored chains
-   * @param   stone to potentially add to the board
-   * @return  chain to which stone has been added
    */
-  private Chain mergeToChains(Stone stone) {
-    // TODO
-    return new Chain();
+  private void incorporateIntoChains(ArrayList<Chain> friends, Stone stone) {
+    Chain merged;
+    if (friends.size() == 0) {
+      merged = new Chain(stone.color);
+      chains.add(merged);
+    } else {
+      Chain friend;
+      merged = friends.get(0);
+      for (int i = 1; i < friends.size(); ++i) { // start with the second chain
+        friend = friends.get(i);
+        for (Stone s : friend.getStones()) {
+          addToChain(merged, s);
+        }
+        chains.remove(friend);
+      }
+    }
+    addToChain(merged, stone);
+  }
+
+  /** Adds the stone to the chain */
+  private void addToChain(Chain chain, Stone stone) {
+    chain.add(stone, getLiberties(stone.coords));
+    filled.put(stone.coords, chain);
   }
 
   /** Removes and returns last move from board */
@@ -147,6 +156,7 @@ public class ChainManager {
     return moves.toJson();
   }
 
+  ////////////////////////////////////////////////////////
   /** Class enabling checking of neighboring coordinates based on some criterion */
   private class NeighborChecker<T> {
     /** Returns an ArrayList of the neighbors that matched the criterion */

@@ -12,6 +12,9 @@ import android.widget.RelativeLayout;
 import android.widget.Toast;
 import com.google.gson.Gson;
 
+import java.util.HashSet;
+import java.util.Set;
+
 
 public class BoardFragment extends Fragment
                            implements View.OnTouchListener {
@@ -156,11 +159,15 @@ public class BoardFragment extends Fragment
 
   private void placeStone(BoxCoords coords) {
     Stone stone = new Stone(getActivity(), coords, currentColor);
-    if (chainManager.addStone(stone)) {
+    Set<Stone> toKill = new HashSet<>();
+    if (chainManager.addStone(stone, toKill)) {
       board.renderStone(stone);
       toggleColor();
       removeCursor();
       firstPass = false;
+      for (Stone s : toKill) {
+        board.removeView(s);
+      }
     } else {
       Toast.makeText(getActivity(), R.string.no_suicide, Toast.LENGTH_LONG).show();
     }

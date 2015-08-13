@@ -22,6 +22,11 @@ public class Chain {
     return stones;
   }
 
+  /** Returns number of stones in chain */
+  public int size() {
+    return stones.size();
+  }
+
   /** Adds the supplied stone to this chain, updating liberties */
   public void add(Stone stone, Set<BoxCoords> newLiberties) {
     if (color != stone.color) {

@@ -1,8 +1,6 @@
 package com.pololanguage.pologo;
 
 
-import android.renderscript.RSInvalidStateException;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -24,10 +22,17 @@ public class ChainManager {
   /** Track moves in order */
   private Moves moves;
 
+  /** Track captured stones */
+  private int whitesCaptures;
+  private int blacksCaptures;
+
+
   ChainManager() {
     chains = new HashSet<>();
     filled = new HashMap<>();
     moves = new Moves();
+    whitesCaptures = 0;
+    blacksCaptures = 0;
   }
 
   /** Returns true if the supplied coordinates are occupied by a stone */
@@ -44,8 +49,8 @@ public class ChainManager {
    * Add stone to board, killing opposing groups as necessary
    * Returns false if move would be suicide
    */
-  public boolean addStone(Stone stone) {
-    killOpponents(stone);
+  public boolean addStone(Stone stone, Set<Stone> toKill) {
+    killOpponents(stone, toKill);
     if (!isSuicide(stone)) {
       incorporateIntoChains(stone);
       moves.add(stone);
@@ -71,18 +76,29 @@ public class ChainManager {
   }
 
   /** Checks for and removes opposing chains with this stone as their last liberty */
-  private void killOpponents(Stone stone) {
+  private void killOpponents(Stone stone, Set<Stone> toKill) {
     ArrayList<Chain> opposingChains = getNeighborChains(stone.coords, stone.color.getOther());
     for (Chain chain : opposingChains) {
       if (chain.isLastLiberty(stone.coords)) {
-        kill(chain);
+        kill(chain, toKill);
       }
     }
   }
 
   /** Removes stones in chain from board and increments capture count of opposing player */
-  private void kill(Chain chain) {
-    // TODO
+  private void kill(Chain chain, Set<Stone> toKill) {
+    Set<Stone> stones = chain.getStones();
+    if (chain.color == StoneColor.BLACK) {
+      whitesCaptures += chain.size();
+    } else {
+      blacksCaptures += chain.size();
+    }
+    toKill.addAll(stones);
+    moves.removeAll(stones);
+    for (Stone stone : stones) {
+      filled.remove(stone.coords);
+    }
+    chains.remove(chain);
   }
 
   /** Returns true if stone can be added; false if move would be suicide */

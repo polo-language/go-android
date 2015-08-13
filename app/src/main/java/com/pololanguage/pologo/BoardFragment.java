@@ -22,19 +22,13 @@ public class BoardFragment extends Fragment
   private int handicap;
   private int boardWidth;
 
-  /**
-   * Holds saved state read from file during board setup
-   */
+  /** Holds saved state read from file during board setup */
   private StoredMove[] storedMoves;
 
-  /**
-   * Tracks sequential passes (two passes in a row ends the game)
-   */
+  /** Tracks sequential passes (two passes in a row ends the game) */
   private boolean firstPass = false;
 
-  /**
-   * Used to add cursor and box only if not already on board
-   */
+  /** Used to add cursor and box only if not already on board */
   private boolean firstTouch = true;
 
   private StoneColor currentColor;
@@ -43,14 +37,12 @@ public class BoardFragment extends Fragment
   private Stone cursor;
   private Box box;
 
-  /**
-   * Standard handicap board coordinates
-   */
+  /** Standard handicap board coordinates */
   private static final BoxCoords[] NINE_HANDICAPS = {new BoxCoords(6, 2), new BoxCoords(2, 6), new BoxCoords(6, 6), new BoxCoords(2, 2), new BoxCoords(4, 4)};
   private static final BoxCoords[] THIRTEEN_HANDICAPS = {new BoxCoords(9, 3), new BoxCoords(3, 9), new BoxCoords(9, 9), new BoxCoords(3, 3), new BoxCoords(6, 6)};
   private static final BoxCoords[] NINETEEN_HANDICAPS = {new BoxCoords(15, 3), new BoxCoords(3, 15), new BoxCoords(15, 15), new BoxCoords(3, 3), new BoxCoords(9, 9)};
 
-
+  /** BoardFragment factory */
   protected static BoardFragment newInstance(int boardSize, int handicap, String colorString, String boardString) {
     BoardFragment frag = new BoardFragment();
     frag.boardSize = boardSize;
@@ -98,17 +90,7 @@ public class BoardFragment extends Fragment
     } else {
       placeStoredMoves();
     }
-    // DEBUG: testStoneLayout();
   }
-
-  // DEBUG:
-//  public void testStoneLayout() {
-//    for (int i = 0; i < boardSize; ++i) {
-//      for (int j = 0; j < boardSize; ++j) {
-//        placeStone(new BoxCoords(i, j));
-//      }
-//    }
-//  }
 
   private void layoutBoard() {
     View boardContainer = getActivity().findViewById(R.id.board_container);

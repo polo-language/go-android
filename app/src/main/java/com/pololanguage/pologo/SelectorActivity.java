@@ -10,7 +10,6 @@ import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -44,26 +43,15 @@ public class SelectorActivity extends Activity {
       FileInputStream fileInputStream = new FileInputStream(file);
 
       try {
-        Gson gson = new Gson();
-        JsonParser parser = new JsonParser();
-        JsonElement jsonElement = parser.parse(new InputStreamReader(fileInputStream, "UTF-8"));
-        JsonObject jsonObject = jsonElement.getAsJsonObject();
-        JsonElement noSave = jsonObject.get(BoardActivity.NO_SAVE_NAME);
-        String colorString;
-        int boardSizeFromJson;
-        String boardString;
-        JsonArray boardArray;
+        JsonObject jsonObject = (new JsonParser())
+            .parse(new InputStreamReader(fileInputStream, "UTF-8"))
+            .getAsJsonObject();
 
-        if (noSave != null) {
+        if (jsonObject.get(BoardActivity.NO_SAVE_NAME) != null) {
           loadSelectorView();
         } else {
-          colorString = jsonObject.get(BoardActivity.CURRENT_COLOR_NAME).getAsString();
-          boardSizeFromJson = jsonObject.get(BoardActivity.BOARD_SIZE_NAME).getAsInt();
-          boardArray = jsonObject.getAsJsonArray(BoardActivity.BOARD_NAME);
-          boardString = gson.toJson(boardArray);
-
-          // TODO: check loaded values - initialize or load selector if 'too many' are 'bad'
-          loadBoard(colorString, boardSizeFromJson, boardString);
+          // TODO: validate loaded values
+          loadBoard(jsonObject);
         }
       } catch (Exception err) { // Just start a new game
         loadSelectorView();
@@ -72,7 +60,8 @@ public class SelectorActivity extends Activity {
       }
     } catch (FileNotFoundException fnfExc) {
       loadSelectorView();
-    } catch (IOException ioExc) {
+    }
+    catch (IOException ioExc) {
       // Do nothing, just for closing fileInputStream - game state loaded already
     }
   }
@@ -89,12 +78,29 @@ public class SelectorActivity extends Activity {
     spinner.setAdapter(adapter);
   }
 
-  private void loadBoard(String currentColor, int boardSizeToUse, String boardString) {
+  /**
+   * Add saved board settings to intent extras, then launch a new BoardActivity.
+   * null argument used for sending selections from selector rather than saved state on disk
+   */
+  private void loadBoard(JsonObject jsonObject) {
     Intent boardIntent = new Intent(this, BoardActivity.class);
+    String colorString;
+    int boardSizeToIntent;
+    String boardString;
 
-    boardIntent.putExtra(BoardActivity.BOARD_SIZE_NAME, boardSizeToUse);
+    if (jsonObject == null) {
+      boardSizeToIntent = boardSize;
+      colorString = "BLACK";
+      boardString = null;
+    } else {
+      colorString = jsonObject.get(BoardActivity.CURRENT_COLOR_NAME).getAsString();
+      boardSizeToIntent = jsonObject.get(BoardActivity.BOARD_SIZE_NAME).getAsInt();
+      boardString = (new Gson()).toJson(jsonObject.getAsJsonArray(BoardActivity.BOARD_NAME));
+    }
+
+    boardIntent.putExtra(BoardActivity.BOARD_SIZE_NAME, boardSizeToIntent);
     boardIntent.putExtra(BoardActivity.EXTRA_HANDICAP, handicap);
-    boardIntent.putExtra(BoardActivity.CURRENT_COLOR_NAME, currentColor);
+    boardIntent.putExtra(BoardActivity.CURRENT_COLOR_NAME, colorString);
     boardIntent.putExtra(BoardActivity.BOARD_NAME, boardString);
 
     startActivity(boardIntent);
@@ -111,7 +117,6 @@ public class SelectorActivity extends Activity {
   }
 
   public void onBoardSizeRadioClicked(View view) {
-    //boolean checked = ((RadioButton) view).isChecked();
     switch (view.getId()) {
       case R.id.board_size_radio_9:
         boardSize = 9;
@@ -126,6 +131,6 @@ public class SelectorActivity extends Activity {
   }
 
   public void onGoClicked(View view) {
-    loadBoard("BLACK", boardSize, null); // check for null boardString in BoardActivity
+    loadBoard(null);
   }
 }

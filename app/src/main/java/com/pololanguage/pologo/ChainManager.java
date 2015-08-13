@@ -1,6 +1,8 @@
 package com.pololanguage.pologo;
 
 
+import android.renderscript.RSInvalidStateException;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -43,11 +45,9 @@ public class ChainManager {
    * Returns false if move would be suicide
    */
   public boolean addStone(Stone stone) {
-    ArrayList<Chain> friends = getNeighborChains(stone.coords, stone.color);
-
     killOpponents(stone);
-    if (!isSuicide(friends, stone)) {
-      incorporateIntoChains(friends, stone);
+    if (!isSuicide(stone)) {
+      incorporateIntoChains(stone);
       moves.add(stone);
       return true;
     } else {
@@ -86,8 +86,8 @@ public class ChainManager {
   }
 
   /** Returns true if stone can be added; false if move would be suicide */
-  private boolean isSuicide(ArrayList<Chain> friends, Stone stone) {
-    for (Chain chain : friends) {
+  private boolean isSuicide(Stone stone) {
+    for (Chain chain : getNeighborChains(stone.coords, stone.color)) {
       if (!chain.isLastLiberty(stone.coords)) {
         return false;
       }
@@ -96,23 +96,24 @@ public class ChainManager {
   }
 
   /** Returns an ArrayList containing coordinates of any liberties of the given position */
-  private ArrayList<BoxCoords> getLiberties(BoxCoords coords) {
+  private Set<BoxCoords> getLiberties(BoxCoords coords) {
     NeighborChecker<BoxCoords> neighborChecker = new NeighborChecker<>();
 
-    return neighborChecker.getMatchingNeighbors(new CheckCoords<BoxCoords>() {
+    return new HashSet(neighborChecker.getMatchingNeighbors(new CheckCoords<BoxCoords>() {
       public void check(ArrayList<BoxCoords> neighbors, BoxCoords coords, Object dummy) {
         if (!taken(coords)) {
           neighbors.add(coords);
         }
       }
-    }, coords, null);
+    }, coords, null));
   }
 
   /**
    * Add stone to existing chain or creates new chain if not connected to any like-colored chains
    * Merges chains as necessary if new stone connects like-colored chains
    */
-  private void incorporateIntoChains(ArrayList<Chain> friends, Stone stone) {
+  private void incorporateIntoChains(Stone stone) {
+    ArrayList<Chain> friends = getNeighborChains(stone.coords, stone.color);
     Chain merged;
     if (friends.size() == 0) {
       merged = new Chain(stone.color);
@@ -122,9 +123,8 @@ public class ChainManager {
       merged = friends.get(0);
       for (int i = 1; i < friends.size(); ++i) { // start with the second chain
         friend = friends.get(i);
-        for (Stone s : friend.getStones()) {
-          addToChain(merged, s);
-        }
+        merged.merge(friend);
+        updateFilled(merged, friend.getStones());
         chains.remove(friend);
       }
     }
@@ -134,19 +134,50 @@ public class ChainManager {
   /** Adds the stone to the chain */
   private void addToChain(Chain chain, Stone stone) {
     chain.add(stone, getLiberties(stone.coords));
+    removeFromOpposingLiberties(stone);
     filled.put(stone.coords, chain);
   }
 
+  /** Sets chain as the value for all stones in filled */
+  private void updateFilled(Chain chain, Set<Stone> stones) {
+    for (Stone stone : stones) {
+      filled.put(stone.coords, chain);
+    }
+  }
+
   /** Removes and returns last move from board */
-  Stone popStone() {
+  public Stone popStone() {
     Stone stone =  moves.pop();
-    filled.remove(stone.coords);
-    // TODO: update chains
+    Chain chain = filled.remove(stone.coords);
+    if (chain == null) {
+      throw new IllegalStateException("Popped stone keyed to null chain");
+    }
+    addToOpposingLiberties(stone);
+
+    // remove and rebuild the current chain (without modifying moves) since it could split, etc.
+    chains.remove(chain);
+    for (Stone s : chain.getStones()) {
+      if (s != stone) {
+        incorporateIntoChains(s);
+      }
+    }
     return stone;
   }
 
+  private void addToOpposingLiberties(Stone stone) {
+    for (Chain chain : getNeighborChains(stone.coords, stone.color.getOther())) {
+      chain.addLiberty(stone.coords);
+    }
+  }
+
+  private void removeFromOpposingLiberties(Stone stone) {
+    for (Chain chain : getNeighborChains(stone.coords, stone.color.getOther())) {
+      chain.removeLiberty(stone.coords);
+    }
+  }
+
   /** Reset to empty board */
-  void reset() {
+  public void reset() {
     chains.clear();
     moves.clear();
     filled.clear();

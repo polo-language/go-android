@@ -6,7 +6,8 @@ import java.util.ArrayList;
 
 /** Stores stones in the order they were placed on the board */
 public class Moves extends ArrayList<Stone> {
-  Stone pop() {
+  /** Removes and returns the last element */
+  public Stone pop() {
     return remove(size()-1);
   }
 
@@ -14,7 +15,7 @@ public class Moves extends ArrayList<Stone> {
    * Serializes current state of stones on the board
    * @return JSON array of StoredMove(s)
    */
-  String toJson() {
+  public String toJson() {
     int numMoves = size();
     StoredMove[] moveArray = new StoredMove[numMoves];
     Stone stone;

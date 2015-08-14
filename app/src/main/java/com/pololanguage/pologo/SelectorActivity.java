@@ -10,7 +10,6 @@ import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -84,8 +83,8 @@ public class SelectorActivity extends Activity {
    */
   private void loadBoard(JsonObject jsonObject) {
     Intent boardIntent = new Intent(this, BoardActivity.class);
-    String colorString;
     int boardSizeToIntent;
+    String colorString;
     String boardString;
 
     if (jsonObject == null) {
@@ -93,8 +92,8 @@ public class SelectorActivity extends Activity {
       colorString = "BLACK";
       boardString = null;
     } else {
-      colorString = jsonObject.get(BoardActivity.CURRENT_COLOR_NAME).getAsString();
       boardSizeToIntent = jsonObject.get(BoardActivity.BOARD_SIZE_NAME).getAsInt();
+      colorString = jsonObject.get(BoardActivity.CURRENT_COLOR_NAME).getAsString();
       boardString = (new Gson()).toJson(jsonObject.getAsJsonArray(BoardActivity.BOARD_NAME));
     }
 

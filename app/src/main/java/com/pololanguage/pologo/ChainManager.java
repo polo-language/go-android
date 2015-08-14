@@ -22,15 +22,19 @@ public class ChainManager {
   /** Track moves in order */
   private Moves moves;
 
+  /** Need to know board size to track liberties at edge of board */
+  private int boardSize;
+
   /** Track captured stones */
   private int whitesCaptures;
   private int blacksCaptures;
 
 
-  ChainManager() {
+  ChainManager(int size) {
     chains = new HashSet<>();
     filled = new HashMap<>();
     moves = new Moves();
+    boardSize = size;
     whitesCaptures = 0;
     blacksCaptures = 0;
   }
@@ -66,11 +70,9 @@ public class ChainManager {
 
     return neighborChecker.getMatchingNeighbors(new CheckCoords<Chain>() {
       public void check(ArrayList<Chain> found, BoxCoords coords, Object criterion) {
-        try {
-          if (taken(coords) && filled.get(coords).color == criterion) {
-            found.add(filled.get(coords));
-          }
-        } catch (IndexOutOfBoundsException e) { /* Do nothing: must be off the end of the board */ }
+        if (taken(coords) && filled.get(coords).color == criterion) {
+          found.add(filled.get(coords));
+        }
       }
     }, coords, color);
   }
@@ -97,6 +99,7 @@ public class ChainManager {
     moves.removeAll(stones);
     for (Stone stone : stones) {
       filled.remove(stone.coords);
+      addToOpposingLiberties(stone);
     }
     chains.remove(chain);
   }
@@ -209,10 +212,18 @@ public class ChainManager {
     /** Returns an ArrayList of the neighbors that matched the criterion */
     private ArrayList<T> getMatchingNeighbors(CheckCoords<T> checker, BoxCoords coords, Object criterion) {
       ArrayList<T> neighbors = new ArrayList<>();
-      checker.check(neighbors, new BoxCoords(coords.x - 1, coords.y), criterion);
-      checker.check(neighbors, new BoxCoords(coords.x + 1, coords.y), criterion);
-      checker.check(neighbors, new BoxCoords(coords.x, coords.y - 1), criterion);
-      checker.check(neighbors, new BoxCoords(coords.x, coords.y + 1), criterion);
+      if (coords.x - 1 > -1) {
+        checker.check(neighbors, new BoxCoords(coords.x - 1, coords.y), criterion);
+      }
+      if (coords.x + 1 < boardSize) {
+        checker.check(neighbors, new BoxCoords(coords.x + 1, coords.y), criterion);
+      }
+      if (coords.y - 1 > -1) {
+        checker.check(neighbors, new BoxCoords(coords.x, coords.y - 1), criterion);
+      }
+      if (coords.y + 1 < boardSize) {
+        checker.check(neighbors, new BoxCoords(coords.x, coords.y + 1), criterion);
+      }
       return neighbors;
     }
   }

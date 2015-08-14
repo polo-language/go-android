@@ -64,7 +64,7 @@ public class BoardFragment extends Fragment
     super.onCreate(savedInstanceState);
     setRetainInstance(true);
     DisplayMetrics displayMetrics = getActivity().getResources().getDisplayMetrics();
-    chainManager = new ChainManager();
+    chainManager = new ChainManager(boardSize);
     boardWidth = Math.min(displayMetrics.widthPixels, displayMetrics.heightPixels);
   }
 

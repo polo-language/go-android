@@ -20,8 +20,8 @@ public class BoardActivity extends Activity
   public static final String NO_SAVE_JSON = "{\"" + NO_SAVE_NAME + "\":true}";
   public static final String CURRENT_COLOR_NAME = "currentColor";
   public static final String BOARD_SIZE_NAME = "boardSize";
-  public static final String BOARD_NAME = "board";
-  private BoardFragment board;
+  public static final String BOARD_NAME = "boardFrag";
+  private BoardFragment boardFrag;
   boolean saveOnDestroy = true;
 
   @Override
@@ -46,9 +46,9 @@ public class BoardActivity extends Activity
     if (findViewById(R.id.board_container) != null) {
       if (savedInstanceState != null) { return; }
 
-      board = BoardFragment.newInstance(boardSize, handicap, colorString, boardJson);
+      boardFrag = BoardFragment.newInstance(boardSize, handicap, colorString, boardJson);
       getFragmentManager().beginTransaction()
-                          .add(R.id.board_container, board).commit();
+                          .add(R.id.board_container, boardFrag).commit();
     }
   }
 
@@ -61,12 +61,12 @@ public class BoardActivity extends Activity
   }
 
   void saveBoardToFile(Boolean saveGameState) {
-    if (board == null) { return; }
+    if (boardFrag == null) { return; }
 
     String json;
     if (saveGameState) {
-      json = board.getJson();
-      // TODO: (eventually) test here if board was actually empty (or had only handicap stones) and should use NO_SAVE_STRING anyway
+      json = boardFrag.getJson();
+      // TODO: (eventually) test here if boardFrag was actually empty (or had only handicap stones) and should use NO_SAVE_STRING anyway
     } else {
       json = NO_SAVE_JSON;
     }
@@ -74,7 +74,7 @@ public class BoardActivity extends Activity
     try {
       saveStringToFile(file, json);
       // DEBUG:
-      //Log.i("saved: ", json);
+      Log.i("saved: ", json);
     } catch (IOException ioE) {
       Log.e("Board state not saved", ioE.toString());
     }
@@ -105,7 +105,7 @@ public class BoardActivity extends Activity
   @Override
   public void onDialogNegativeClick() {
     // "New Game"
-    board.reset();
+    boardFrag.reset();
     saveOnDestroy = false;
     saveBoardToFile(false);
     // Restart selector activity
@@ -117,15 +117,15 @@ public class BoardActivity extends Activity
   // Button click handlers
 
   public void undo(View view) {
-    if (board != null) board.undo();
+    if (boardFrag != null) boardFrag.undo();
   }
 
   public void pass(View view) {
-    if (board != null) board.pass();
+    if (boardFrag != null) boardFrag.pass();
   }
 
   public void reset(View view) {
-    if (board != null) {
+    if (boardFrag != null) {
       showNoticeDialog();
     }
   }

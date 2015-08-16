@@ -257,9 +257,11 @@ public class BoardFragment extends Fragment
   //////////////////////////////////
   // SERIALIZATION:
   String getJson() {
-    return "{\"" + BoardActivity.CURRENT_COLOR_NAME + "\":\"" + currentColor + "\",\"" +
+    return "{\"" +
+        BoardActivity.CURRENT_COLOR_NAME + "\":\"" + currentColor + "\",\"" +
         BoardActivity.BOARD_SIZE_NAME + "\":" + boardSize + ",\"" +
-        BoardActivity.BOARD_NAME + "\":" + chainManager.toJson() + "}";
+        BoardActivity.BOARD_NAME + "\":" + chainManager.toJson() +
+        "}";
   }
 
   //////////////////////////////////

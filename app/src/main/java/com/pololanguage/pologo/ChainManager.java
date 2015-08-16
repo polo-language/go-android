@@ -51,10 +51,12 @@ public class ChainManager {
 
   /**
    * Add stone to board, killing opposing groups as necessary
-   * Returns false if move would be suicide
+   * @param stone     the stone to add
+   * @param captured  fills this set with the stones captured
+   * @return          false if move would be suicide
    */
-  public boolean addStone(Stone stone, Set<Stone> toKill) {
-    killOpponents(stone, toKill);
+  public boolean addStone(Stone stone, Set<Stone> captured) {
+    capture(stone, captured);
     if (!isSuicide(stone)) {
       incorporateIntoChains(stone);
       moves.add(stone);
@@ -77,25 +79,32 @@ public class ChainManager {
     }, coords, color);
   }
 
-  /** Checks for and removes opposing chains with this stone as their last liberty */
-  private void killOpponents(Stone stone, Set<Stone> toKill) {
+  /** Checks for and removes opposing chains with this stone as their last liberty
+   * @param stone     the stone doing the capturing
+   * @param captured  fills this set with the stones captured
+   */
+  private void capture(Stone stone, Set<Stone> captured) {
     ArrayList<Chain> opposingChains = getNeighborChains(stone.coords, stone.color.getOther());
     for (Chain chain : opposingChains) {
       if (chain.isLastLiberty(stone.coords)) {
-        kill(chain, toKill);
+        captureChain(chain, captured);
       }
     }
   }
 
-  /** Removes stones in chain from board and increments capture count of opposing player */
-  private void kill(Chain chain, Set<Stone> toKill) {
+  /**
+   * Removes stones in chain from board and increments captureChain count of opposing player
+   * @param chain     the chain of stones to captureChain
+   * @param captured  fills this set with the stones captured
+   */
+  private void captureChain(Chain chain, Set<Stone> captured) {
     Set<Stone> stones = chain.getStones();
     if (chain.color == StoneColor.BLACK) {
       whitesCaptures += chain.size();
     } else {
       blacksCaptures += chain.size();
     }
-    toKill.addAll(stones);
+    captured.addAll(stones);
     moves.removeAll(stones);
     for (Stone stone : stones) {
       filled.remove(stone.coords);

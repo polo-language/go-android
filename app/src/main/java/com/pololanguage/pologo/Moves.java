@@ -4,6 +4,7 @@ package com.pololanguage.pologo;
 import com.google.gson.Gson;
 import java.util.ArrayList;
 
+
 /** Stores stones in the order they were placed on the board */
 public class Moves extends ArrayList<Stone> {
   /** Removes and returns the last element */

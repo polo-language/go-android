@@ -65,7 +65,7 @@ public class History<E> extends ArrayList<E> {
 
   /** Returns the next element in the future (or null if at the end of time) and increments head */
   public E stepForward() {
-    if (head == max || head < 0) {
+    if (head == max) {
       return null;
     }
     ++head;

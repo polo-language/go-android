@@ -61,7 +61,7 @@ public class MoveManager {
       return null;
     }
     Stone stone = move.getStone();
-    Stone[] captured = move.getCaptured();
+    Set<Stone> captured = move.getCaptured();
     Chain chain = filled.remove(stone.coords);
 
     /* Remove and rebuild the current chain since it could have split, etc. */
@@ -79,13 +79,17 @@ public class MoveManager {
       incorporateIntoChains(s);
     }
 
+    updateCaptureCount(stone.color, captured.size(), false);
     addToOpposingLiberties(stone);
     return move;
   }
 
   public Move redo() {
-    // TODO
-    return null;
+    Move move = history.stepForward();
+    if (move != null) {
+      addStoneWithHistory(move.getStone(), move.getCaptured(), false);
+    }
+    return move;
   }
 
   /**
@@ -95,10 +99,16 @@ public class MoveManager {
    * @return          false if move would be suicide
    */
   public boolean addStone(Stone stone, Set<Stone> captured) {
+    return addStoneWithHistory(stone, captured, true);
+  }
+
+  private boolean addStoneWithHistory(Stone stone, Set<Stone> captured, boolean modifyHistory) {
     capture(stone, captured);
     if (!isSuicide(stone)) {
       incorporateIntoChains(stone);
-      history.add(new Move(stone, captured));
+      if (modifyHistory) {
+        history.add(new Move(stone, captured));
+      }
       return true;
     } else {
       return false;
@@ -138,17 +148,22 @@ public class MoveManager {
    */
   private void captureChain(Chain chain, Set<Stone> captured) {
     Set<Stone> stones = chain.getStones();
-    if (chain.color == StoneColor.BLACK) {
-      whitesCaptures += chain.size();
-    } else {
-      blacksCaptures += chain.size();
-    }
+    updateCaptureCount(chain.color, chain.size(), true);
     captured.addAll(stones);
     for (Stone stone : stones) {
       filled.remove(stone.coords);
       addToOpposingLiberties(stone);
     }
     chains.remove(chain);
+  }
+
+  /** Increments/decrements count of opposing colors captures */
+  private void updateCaptureCount(StoneColor color, int count, boolean increment) {
+    if (color == StoneColor.BLACK) {
+      whitesCaptures += increment ? count : count * -1;
+    } else {
+      blacksCaptures += increment ? count : count * -1;
+    }
   }
 
   /** Returns true if stone can be added; false if move would be suicide */

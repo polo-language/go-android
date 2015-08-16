@@ -125,9 +125,7 @@ public class BoardActivity extends Activity
     startActivity(selector);
   }
 
-  //////////////////////////////////
-  // Button click handlers
-
+  /* Button click handlers */
   public void undo(View view) {
     if (boardFrag != null) {
       lockButtons();

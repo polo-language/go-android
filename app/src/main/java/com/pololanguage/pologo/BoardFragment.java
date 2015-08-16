@@ -208,16 +208,15 @@ public class BoardFragment extends Fragment
     currentColor = currentColor.getOther();
   }
 
-  //////////////////////////////////
-  // BUTTON onClick LISTENERS
+  /* BUTTON onClick LISTENERS */
   /**
-   * Undo previous move if a move has already been taken (and not been undone)
+   * Undo previous move if past moves are available
    * Removes stone and adds back any chains captured by this move
    */
   public void undo() {
     Move move = moveManager.undo();
     if (move == null) {
-      Toast.makeText(getActivity(), R.string.no_moves_to_undo, Toast.LENGTH_LONG).show();
+      Toast.makeText(getActivity(), R.string.no_moves_to_undo, Toast.LENGTH_SHORT).show();
     } else {
       board.removeView(move.getStone());
       for (Stone stone : move.getCaptured()) {
@@ -230,12 +229,12 @@ public class BoardFragment extends Fragment
 
   /**
    * Redo next move if future moves are available
-   * Adds stone and removes any chains captured by this move
+   * Adds back stone and removes any chains captured by it
    */
   public void redo() {
     Move move = moveManager.redo();
     if (move == null) {
-      Toast.makeText(getActivity(), R.string.no_future_to_redo, Toast.LENGTH_LONG).show();
+      Toast.makeText(getActivity(), R.string.no_future_to_redo, Toast.LENGTH_SHORT).show();
     } else {
       for (Stone stone : move.getCaptured()) {
         board.removeView(stone);

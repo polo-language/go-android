@@ -5,20 +5,18 @@ import java.util.Set;
 /** Stores a single move: a stone and any stones captured by it */
 public class Move {
   private Stone stone;
-  private Stone[] captured;
-
-  private static Stone[] typeArray = new Stone[0];
+  private Set<Stone> captured;
 
   Move(Stone s, Set<Stone> c) {
     stone = s;
-    captured = c.toArray(typeArray);
+    captured = c;
   }
 
   public Stone getStone() {
     return stone;
   }
 
-  public Stone[] getCaptured() {
+  public Set<Stone> getCaptured() {
     return captured;
   }
 }

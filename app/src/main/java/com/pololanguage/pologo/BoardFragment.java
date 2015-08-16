@@ -140,8 +140,11 @@ public class BoardFragment extends Fragment
   }
 
   private void placeStone(BoxCoords coords) {
+    board.setClickable(false);
+
     Stone stone = new Stone(getActivity(), coords, currentColor);
     Set<Stone> toKill = new HashSet<>();
+
     if (moveManager.addStone(stone, toKill)) {
       board.renderStone(stone);
       toggleColor();
@@ -153,6 +156,7 @@ public class BoardFragment extends Fragment
     } else {
       Toast.makeText(getActivity(), R.string.no_suicide, Toast.LENGTH_LONG).show();
     }
+    board.setClickable(true);
   }
 
   @Override
@@ -211,21 +215,16 @@ public class BoardFragment extends Fragment
    * Removes stone and adds back any chains captured by this move
    */
   public void undo() {
-    if (moveManager.hasNoMoves()) {
+    Move move = moveManager.undo();
+    if (move == null) {
       Toast.makeText(getActivity(), R.string.no_moves_to_undo, Toast.LENGTH_LONG).show();
     } else {
-      Move move = moveManager.undo();
-      board.removeView(move.stone);
-      for (Stone stone : move.captured) {
+      board.removeView(move.getStone());
+      for (Stone stone : move.getCaptured()) {
         board.addView(stone);
       }
       removeCursor();
       toggleColor();
-      // TODO: get rid of this Toast?
-      Toast.makeText(getActivity(),
-          move.stone.color == StoneColor.BLACK ?
-              R.string.undo_black : R.string.undo_white,
-          Toast.LENGTH_SHORT).show();
     }
   }
 
@@ -234,24 +233,27 @@ public class BoardFragment extends Fragment
    * Adds stone and removes any chains captured by this move
    */
   public void redo() {
-    if (!moveManager.hasFuture()) {
+    Move move = moveManager.redo();
+    if (move == null) {
       Toast.makeText(getActivity(), R.string.no_future_to_redo, Toast.LENGTH_LONG).show();
     } else {
-      Move move = moveManager.redo();
-      for (Stone stone : move.captured) {
+      for (Stone stone : move.getCaptured()) {
         board.removeView(stone);
       }
-      board.addView(move.stone);
+      board.addView(move.getStone());
       removeCursor();
       toggleColor();
-      // TODO: add Toast?
     }
   }
 
-  public void pass() {
+  /**
+   * Pass this player's move and toggle to next next player's color
+   * @return true if this pass quits the game (second pass in a row)
+   */
+  public boolean pass() {
     if (firstPass) {
       endGame();
-      return;
+      return true;
     }
     removeCursor();
     Toast.makeText(getActivity(),
@@ -260,14 +262,13 @@ public class BoardFragment extends Fragment
             Toast.LENGTH_SHORT).show();
     toggleColor();
     firstPass = true;
+    return false;
   }
 
   public void endGame() {
     removeCursor();
     board.setOnTouchListener(null);
     board.setClickable(false);
-    getActivity().findViewById(R.id.undo_button).setEnabled(false);
-    getActivity().findViewById(R.id.pass_button).setEnabled(false);
     getActivity().findViewById(R.id.game_over).setVisibility(View.VISIBLE);
   }
 
@@ -275,10 +276,7 @@ public class BoardFragment extends Fragment
     board.removeAllViews();
     moveManager.reset();
     board.setOnTouchListener(this);
-    getActivity().findViewById(R.id.undo_button).setEnabled(true);
-    getActivity().findViewById(R.id.pass_button).setEnabled(true);
     getActivity().findViewById(R.id.game_over).setVisibility(View.INVISIBLE);
-    Toast.makeText(getActivity(), R.string.reset, Toast.LENGTH_LONG).show();
   }
 
   //////////////////////////////////

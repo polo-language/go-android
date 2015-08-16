@@ -5,9 +5,7 @@ import android.content.Context;
 import android.view.View;
 import android.widget.RelativeLayout;
 
-/**
- * Holds the coordinates and color of individual stones
- */
+/** Holds the coordinates and color of individual stones */
 public class Stone extends View {
   BoxCoords coords;
   StoneColor color;

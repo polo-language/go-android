@@ -20,7 +20,7 @@ public class MoveManager {
   private Map<BoxCoords, Chain> filled;
 
   /** Track moves in order */
-  private History history;
+  private History<Move> history;
 
   /** Need to know board size to track liberties at edge of board */
   private int boardSize;
@@ -33,7 +33,7 @@ public class MoveManager {
   MoveManager(int size) {
     chains = new HashSet<>();
     filled = new HashMap<>();
-    history = new History<Move>();
+    history = new History<>();
     boardSize = size;
     whitesCaptures = 0;
     blacksCaptures = 0;
@@ -44,9 +44,48 @@ public class MoveManager {
     return filled.containsKey(coords);
   }
 
-  /** Returns true if board contains no stones */
-  public boolean hasNoMoves() {
-    return filled.isEmpty();
+  /** Returns true if there is history after the present */
+//  public boolean hasFuture() {
+//    return history.hasFuture();
+//  }
+//
+//  /** Returns true if there is history before the present */
+//  public boolean hasPast() {
+//    return history.hasPast();
+//  }
+
+  /** Removes and returns last move from board */
+  public Move undo() {
+    Move move = history.stepBack();
+    if (move == null) {
+      return null;
+    }
+    Stone stone = move.getStone();
+    Stone[] captured = move.getCaptured();
+    Chain chain = filled.remove(stone.coords);
+
+    /* Remove and rebuild the current chain since it could have split, etc. */
+    if (chain == null) {
+      throw new IllegalStateException("Popped stone keyed to null chain");
+    }
+    chains.remove(chain);
+    for (Stone s : chain.getStones()) {
+      if (s != stone) {
+        incorporateIntoChains(s);
+      }
+    }
+    /* Return captured stones to board */
+    for (Stone s : captured) {
+      incorporateIntoChains(s);
+    }
+
+    addToOpposingLiberties(stone);
+    return move;
+  }
+
+  public Move redo() {
+    // TODO
+    return null;
   }
 
   /**
@@ -59,7 +98,7 @@ public class MoveManager {
     capture(stone, captured);
     if (!isSuicide(stone)) {
       incorporateIntoChains(stone);
-      moves.add(stone);
+      history.add(new Move(stone, captured));
       return true;
     } else {
       return false;
@@ -105,7 +144,6 @@ public class MoveManager {
       blacksCaptures += chain.size();
     }
     captured.addAll(stones);
-    moves.removeAll(stones);
     for (Stone stone : stones) {
       filled.remove(stone.coords);
       addToOpposingLiberties(stone);
@@ -137,8 +175,8 @@ public class MoveManager {
   }
 
   /**
-   * Add stone to existing chain or creates new chain if not connected to any like-colored chains
-   * Merges chains as necessary if new stone connects like-colored chains
+   * Adds stone to existing chain or creates new chain if not connected to any like-colored chains
+   * Merges chains as necessary if new stone connects two or more like-colored chains
    */
   private void incorporateIntoChains(Stone stone) {
     ArrayList<Chain> friends = getNeighborChains(stone.coords, stone.color);
@@ -149,7 +187,7 @@ public class MoveManager {
     } else {
       Chain friend;
       merged = friends.get(0);
-      for (int i = 1; i < friends.size(); ++i) { // start with the second chain
+      for (int i = 1; i < friends.size(); ++i) { /* start with the second chain */
         friend = friends.get(i);
         merged.merge(friend);
         updateFilled(merged, friend.getStones());
@@ -173,25 +211,6 @@ public class MoveManager {
     }
   }
 
-  /** Removes and returns last move from board */
-  public Stone popStone() {
-    Stone stone =  moves.pop();
-    Chain chain = filled.remove(stone.coords);
-    if (chain == null) {
-      throw new IllegalStateException("Popped stone keyed to null chain");
-    }
-    addToOpposingLiberties(stone);
-
-    // remove and rebuild the current chain (without modifying moves) since it could split, etc.
-    chains.remove(chain);
-    for (Stone s : chain.getStones()) {
-      if (s != stone) {
-        incorporateIntoChains(s);
-      }
-    }
-    return stone;
-  }
-
   private void addToOpposingLiberties(Stone stone) {
     for (Chain chain : getNeighborChains(stone.coords, stone.color.getOther())) {
       chain.addLiberty(stone.coords);
@@ -207,15 +226,29 @@ public class MoveManager {
   /** Reset to empty board */
   public void reset() {
     chains.clear();
-    moves.clear();
+    history.clear();
     filled.clear();
   }
 
   public String toJson() {
-    return moves.toJson();
+    // TODO: iterate over history write to JSON; include head index
+//    public String toJson() {
+//      int numMoves = size();
+//      StoredMove[] moveArray = new StoredMove[numMoves];
+//      Stone stone;
+//
+//      for (int i = 0; i < numMoves; ++i) {
+//        stone = get(i);
+//        moveArray[i] = new StoredMove(i, stone.coords.x, stone.coords.y, stone.color);
+//      }
+//      return (new Gson()).toJson(moveArray);
+//    }
+//    return moves.toJson();
+    return "";
   }
 
-  ////////////////////////////////////////////////////////
+
+  /* Inner classes */
   /** Class enabling checking of neighboring coordinates based on some criterion */
   private class NeighborChecker<T> {
     /** Returns an ArrayList of the neighbors that matched the criterion */

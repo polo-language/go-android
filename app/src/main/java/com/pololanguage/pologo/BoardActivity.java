@@ -89,6 +89,18 @@ public class BoardActivity extends Activity
     writer.close();
   }
 
+  public void lockButtons() {
+    findViewById(R.id.undo_button).setEnabled(false);
+    findViewById(R.id.redo_button).setEnabled(false);
+    findViewById(R.id.pass_button).setEnabled(false);
+  }
+
+  void unlockButtons() {
+    findViewById(R.id.undo_button).setEnabled(true);
+    findViewById(R.id.redo_button).setEnabled(true);
+    findViewById(R.id.pass_button).setEnabled(true);
+  }
+
   //////////////////////////////////
   // Quit dialog implementation
   public void showNoticeDialog() {
@@ -117,18 +129,36 @@ public class BoardActivity extends Activity
   // Button click handlers
 
   public void undo(View view) {
-    if (boardFrag != null) boardFrag.undo();
+    if (boardFrag != null) {
+      lockButtons();
+      boardFrag.undo();
+      unlockButtons();
+    }
   }
 
-  public void redo(View view) { if (boardFrag != null) boardFrag.redo(); }
+  public void redo(View view) {
+    if (boardFrag != null) {
+      lockButtons();
+      boardFrag.redo();
+      unlockButtons();
+    }
+  }
 
   public void pass(View view) {
-    if (boardFrag != null) boardFrag.pass();
+    if (boardFrag != null) {
+      lockButtons();
+      boolean quit = boardFrag.pass();
+      if (!quit) {
+        unlockButtons();
+      }
+    }
   }
 
   public void reset(View view) {
     if (boardFrag != null) {
+      lockButtons();
       showNoticeDialog();
+      unlockButtons();
     }
   }
 }

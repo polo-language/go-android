@@ -34,6 +34,12 @@
             android:text="@string/undo_button"
             android:onClick="undo"/>
         <Button
+            android:id="@+id/redo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/redo_button"
+            android:onClick="redo"/>
+        <Button
             android:id="@+id/pass_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

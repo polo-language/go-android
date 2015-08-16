@@ -12,7 +12,7 @@ import java.util.Map;
  * Manages all game-play (i.e. non-visual) aspects of stone handling
  * Manages creation, updating, and removal of chains of like-colored stones
  */
-public class ChainManager {
+public class MoveManager {
   /** Holds all chains on the board */
   private Set<Chain> chains;
 
@@ -20,7 +20,7 @@ public class ChainManager {
   private Map<BoxCoords, Chain> filled;
 
   /** Track moves in order */
-  private Moves moves;
+  private History history;
 
   /** Need to know board size to track liberties at edge of board */
   private int boardSize;
@@ -30,10 +30,10 @@ public class ChainManager {
   private int blacksCaptures;
 
 
-  ChainManager(int size) {
+  MoveManager(int size) {
     chains = new HashSet<>();
     filled = new HashMap<>();
-    moves = new Moves();
+    history = new History<Move>();
     boardSize = size;
     whitesCaptures = 0;
     blacksCaptures = 0;

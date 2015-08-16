@@ -120,6 +120,8 @@ public class BoardActivity extends Activity
     if (boardFrag != null) boardFrag.undo();
   }
 
+  public void redo(View view) { if (boardFrag != null) boardFrag.redo(); }
+
   public void pass(View view) {
     if (boardFrag != null) boardFrag.pass();
   }

@@ -1,4 +1,4 @@
-package com.pololanguage.pologo;
+package com.pololanguage.ninedragongo;
 
 /**
  * Stone color class; includes reference to drawable resource

@@ -1,4 +1,4 @@
-package com.pololanguage.pologo;
+package com.pololanguage.ninedragongo;
 
 import android.app.ActionBar;
 import android.app.Activity;
@@ -25,6 +25,7 @@ public class SelectorActivity extends Activity {
   private int boardSize = DEFAULT_BOARD_SIZE;
   private int handicap = DEFAULT_HANDICAP;
   private static Integer[] handicaps = {0, 1, 2, 3, 4, 5};
+  static Serializer serializer = new Serializer();
 
   @Override
   public void onCreate(Bundle icicle) {

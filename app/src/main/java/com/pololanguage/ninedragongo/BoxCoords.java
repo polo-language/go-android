@@ -1,4 +1,4 @@
-package com.pololanguage.pologo;
+package com.pololanguage.ninedragongo;
 
 /**
  * Holds zero-indexed game position coordinates

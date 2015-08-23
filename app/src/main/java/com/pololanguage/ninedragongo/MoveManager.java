@@ -1,9 +1,11 @@
-package com.pololanguage.pologo;
+package com.pololanguage.ninedragongo;
 
 
-import java.util.ArrayList;
+import android.util.Log;
+
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.Map;
 
@@ -39,12 +41,20 @@ public class MoveManager {
     blacksCaptures = 0;
   }
 
+  Set<Chain> getChains() {
+    return chains;
+  }
+
+  History<Move> getHistory() {
+    return history;
+  }
+
   /** Returns true if the supplied coordinates are occupied by a stone */
   public boolean taken(BoxCoords coords) {
     return filled.containsKey(coords);
   }
 
-  /** Returns true if there is history after the present */
+//  /** Returns true if there is history after the present */
 //  public boolean hasFuture() {
 //    return history.hasFuture();
 //  }
@@ -56,6 +66,7 @@ public class MoveManager {
 
   /** Removes and returns last move from board */
   public Move undo() {
+    Log.v("MoveManager", "Undo: before: " + chains.size());
     Move move = history.stepBack();
     if (move == null) {
       return null;
@@ -63,6 +74,7 @@ public class MoveManager {
     Stone stone = move.getStone();
     Set<Stone> captured = move.getCaptured();
     Chain chain = filled.remove(stone.coords);
+    addToOpposingLiberties(stone);
 
     /* Remove and rebuild the current chain since it could have split, etc. */
     if (chain == null) {
@@ -70,8 +82,8 @@ public class MoveManager {
     }
     chains.remove(chain);
     for (Stone s : chain.getStones()) {
-      if (s != stone) {
-        incorporateIntoChains(s);
+      if (s != stone) { Log.i("undo", "stone incorporating: (" + Integer.toString(s.coords.x) + ", " + Integer.toString(s.coords.y) + ")");
+          incorporateIntoChains(s);
       }
     }
     /* Return captured stones to board */
@@ -80,7 +92,7 @@ public class MoveManager {
     }
 
     updateCaptureCount(stone.color, captured.size(), false);
-    addToOpposingLiberties(stone);
+    Log.v("MoveManager", "Undo: after: " + chains.size());
     return move;
   }
 
@@ -103,37 +115,40 @@ public class MoveManager {
   }
 
   private boolean addStoneWithHistory(Stone stone, Set<Stone> captured, boolean modifyHistory) {
+    Log.v("MoveManager", "Add: before: " + chains.size());
+
     capture(stone, captured);
     if (!isSuicide(stone)) {
       incorporateIntoChains(stone);
       if (modifyHistory) {
         history.add(new Move(stone, captured));
       }
+      Log.v("MoveManager", "Add: after: " + chains.size());
       return true;
     } else {
+      Log.v("MoveManager", "Add: after: " + chains.size());
       return false;
     }
   }
 
   /** Returns up to 4 chains neighboring the supplied coordinates and of the given color */
-  private ArrayList<Chain> getNeighborChains(BoxCoords coords, StoneColor color) {
-    NeighborChecker<Chain> neighborChecker = new NeighborChecker<>();
-
-    return neighborChecker.getMatchingNeighbors(new CheckCoords<Chain>() {
-      public void check(ArrayList<Chain> found, BoxCoords coords, Object criterion) {
-        if (taken(coords) && filled.get(coords).color == criterion) {
-          found.add(filled.get(coords));
+  private Set<Chain> getNeighborChains(BoxCoords coords, StoneColor color) {
+    return new NeighborChecker<Chain>().getMatchingNeighbors(new CheckCoords<Chain>() {
+      public void check(Set<Chain> found, BoxCoords coords, Object criterion) {
+        if (taken(coords) && filled.get(coords).getColor() == criterion) {
+          found.add(filled.get(coords)); Log.i("getNeighborChains", SelectorActivity.serializer.toJson(filled.get(coords)));
         }
       }
     }, coords, color);
   }
 
-  /** Checks for and removes opposing chains with this stone as their last liberty
+  /**
+   * Checks for and removes opposing chains with this stone as their last liberty
    * @param stone     the stone doing the capturing
    * @param captured  fills this set with the stones captured
    */
   private void capture(Stone stone, Set<Stone> captured) {
-    ArrayList<Chain> opposingChains = getNeighborChains(stone.coords, stone.color.getOther());
+    Set<Chain> opposingChains = getNeighborChains(stone.coords, stone.color.getOther());
     for (Chain chain : opposingChains) {
       if (chain.isLastLiberty(stone.coords)) {
         captureChain(chain, captured);
@@ -148,7 +163,7 @@ public class MoveManager {
    */
   private void captureChain(Chain chain, Set<Stone> captured) {
     Set<Stone> stones = chain.getStones();
-    updateCaptureCount(chain.color, chain.size(), true);
+    updateCaptureCount(chain.getColor(), chain.size(), true);
     captured.addAll(stones);
     for (Stone stone : stones) {
       filled.remove(stone.coords);
@@ -181,7 +196,7 @@ public class MoveManager {
     NeighborChecker<BoxCoords> neighborChecker = new NeighborChecker<>();
 
     return new HashSet(neighborChecker.getMatchingNeighbors(new CheckCoords<BoxCoords>() {
-      public void check(ArrayList<BoxCoords> neighbors, BoxCoords coords, Object dummy) {
+      public void check(Set<BoxCoords> neighbors, BoxCoords coords, Object dummy) {
         if (!taken(coords)) {
           neighbors.add(coords);
         }
@@ -193,17 +208,18 @@ public class MoveManager {
    * Adds stone to existing chain or creates new chain if not connected to any like-colored chains
    * Merges chains as necessary if new stone connects two or more like-colored chains
    */
-  private void incorporateIntoChains(Stone stone) {
-    ArrayList<Chain> friends = getNeighborChains(stone.coords, stone.color);
+  private synchronized void incorporateIntoChains(Stone stone) {
+    Set<Chain> friends = getNeighborChains(stone.coords, stone.color);  Log.i("incorporate", "num friends: " + Integer.toString(friends.size()));
     Chain merged;
-    if (friends.size() == 0) {
+    Iterator<Chain> iterator = friends.iterator();
+    if (!iterator.hasNext()) {
       merged = new Chain(stone.color);
       chains.add(merged);
     } else {
       Chain friend;
-      merged = friends.get(0);
-      for (int i = 1; i < friends.size(); ++i) { /* start with the second chain */
-        friend = friends.get(i);
+      merged = iterator.next();
+      while (iterator.hasNext()) {
+        friend = iterator.next();
         merged.merge(friend);
         updateFilled(merged, friend.getStones());
         chains.remove(friend);
@@ -229,6 +245,7 @@ public class MoveManager {
   private void addToOpposingLiberties(Stone stone) {
     for (Chain chain : getNeighborChains(stone.coords, stone.color.getOther())) {
       chain.addLiberty(stone.coords);
+      Log.v("MoveManager", "Add to opposing liberties");
     }
   }
 
@@ -266,9 +283,9 @@ public class MoveManager {
   /* Inner classes */
   /** Class enabling checking of neighboring coordinates based on some criterion */
   private class NeighborChecker<T> {
-    /** Returns an ArrayList of the neighbors that matched the criterion */
-    private ArrayList<T> getMatchingNeighbors(CheckCoords<T> checker, BoxCoords coords, Object criterion) {
-      ArrayList<T> neighbors = new ArrayList<>();
+    /** Returns an Set of the neighbors that matched the criterion */
+    private Set<T> getMatchingNeighbors(CheckCoords<T> checker, BoxCoords coords, Object criterion) {
+      Set<T> neighbors = new HashSet<>();
       if (coords.x - 1 > -1) {
         checker.check(neighbors, new BoxCoords(coords.x - 1, coords.y), criterion);
       }
@@ -287,7 +304,7 @@ public class MoveManager {
 
   /** Interface to be used as method argument to NeighborChecker class */
   private interface CheckCoords<T> {
-    void check(ArrayList<T> found, BoxCoords coords, Object criterion);
+    void check(Set<T> found, BoxCoords coords, Object criterion);
   }
 }
 

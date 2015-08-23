@@ -1,4 +1,4 @@
-package com.pololanguage.pologo;
+package com.pololanguage.ninedragongo;
 
 import android.app.ActionBar;
 import android.app.Activity;
@@ -60,12 +60,12 @@ public class BoardActivity extends Activity
     super.onDestroy();
   }
 
-  void saveBoardToFile(Boolean saveGameState) {
+  private void saveBoardToFile(Boolean saveGameState) {
     if (boardFrag == null) { return; }
 
     String json;
     if (saveGameState) {
-      json = boardFrag.getJson();
+      json = boardFrag.toJson();
       // TODO: (eventually) test here if boardFrag was actually empty (or had only handicap stones) and should use NO_SAVE_STRING anyway
     } else {
       json = NO_SAVE_JSON;
@@ -89,7 +89,7 @@ public class BoardActivity extends Activity
     writer.close();
   }
 
-  public void lockButtons() {
+  void lockButtons() {
     findViewById(R.id.undo_button).setEnabled(false);
     findViewById(R.id.redo_button).setEnabled(false);
     findViewById(R.id.pass_button).setEnabled(false);

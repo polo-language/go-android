@@ -1,4 +1,4 @@
-package com.pololanguage.pologo;
+package com.pololanguage.ninedragongo;
 
 
 import android.app.Fragment;
@@ -280,12 +280,16 @@ public class BoardFragment extends Fragment
 
   //////////////////////////////////
   // SERIALIZATION:
-  String getJson() {
-    return "{\"" +
-        BoardActivity.CURRENT_COLOR_NAME + "\":\"" + currentColor + "\",\"" +
-        BoardActivity.BOARD_SIZE_NAME + "\":" + boardSize + ",\"" +
-        BoardActivity.BOARD_NAME + "\":" + moveManager.toJson() +
-        "}";
+  String toJson() {
+    return SelectorActivity.serializer.serializeBoard(currentColor,
+                                                      boardSize,
+                                                      moveManager.getHistory(),
+                                                      moveManager.getChains());
+//    return "{\"" +
+//        BoardActivity.CURRENT_COLOR_NAME + "\":\"" + currentColor + "\",\"" +
+//        BoardActivity.BOARD_SIZE_NAME + "\":" + boardSize + ",\"" +
+//        BoardActivity.BOARD_NAME + "\":" + moveManager.toJson() +
+//        "}";
   }
 
   //////////////////////////////////

@@ -1,4 +1,4 @@
-package com.pololanguage.pologo;
+package com.pololanguage.ninedragongo;
 
 import android.app.Activity;
 import android.app.AlertDialog;

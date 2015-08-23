@@ -1,13 +1,18 @@
-package com.pololanguage.pologo;
+package com.pololanguage.ninedragongo;
 
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
+
+import java.lang.reflect.Type;
 import java.util.HashSet;
 import java.util.Set;
 
 
 /** Track a single-color chain of stones */
 public class Chain {
-  StoneColor color;
+  private StoneColor color;
   private Set<Stone> stones;
   private Set<BoxCoords> liberties;
 
@@ -20,6 +25,16 @@ public class Chain {
   /** Public access to the set of stones */
   public Set<Stone> getStones() {
     return stones;
+  }
+
+  /** Public access to the set of liberties */
+  public Set<BoxCoords> getLiberties() {
+    return liberties;
+  }
+
+  /** Public access to the color */
+  public StoneColor getColor() {
+    return color;
   }
 
   /** Returns number of stones in chain */

@@ -279,7 +279,7 @@ public class BoardFragment extends Fragment
   //////////////////////////////////
   // SERIALIZATION:
   String toJson() {
-    return SelectorActivity.serializer.serializeBoard(currentColor,
+    return Serializer.serializer.serializeBoard(currentColor,
                                                       boardSize,
                                                       moveManager.getHistory(),
                                                       moveManager.getChains());

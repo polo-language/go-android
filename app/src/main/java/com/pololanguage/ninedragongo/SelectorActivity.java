@@ -25,7 +25,6 @@ public class SelectorActivity extends Activity {
   private int boardSize = DEFAULT_BOARD_SIZE;
   private int handicap = DEFAULT_HANDICAP;
   private static Integer[] handicaps = {0, 1, 2, 3, 4, 5};
-  static Serializer serializer = new Serializer();
 
   @Override
   public void onCreate(Bundle icicle) {
@@ -38,7 +37,7 @@ public class SelectorActivity extends Activity {
       getActionBar().setDisplayOptions(ActionBar.DISPLAY_SHOW_HOME | ActionBar.DISPLAY_SHOW_TITLE);
     }
 
-    File file = new File(getFilesDir(), BoardActivity.SAVED_BOARD_FILENAME);
+    File file = new File(getFilesDir(), Serializer.SAVED_BOARD_FILENAME);
     try {
       FileInputStream fileInputStream = new FileInputStream(file);
 
@@ -47,7 +46,7 @@ public class SelectorActivity extends Activity {
             .parse(new InputStreamReader(fileInputStream, "UTF-8"))
             .getAsJsonObject();
 
-        if (jsonObject.get(BoardActivity.NO_SAVE_NAME) != null) {
+        if (jsonObject.get(Serializer.NO_SAVE_NAME) != null) {
           loadSelectorView();
         } else {
           // TODO: validate loaded values
@@ -93,15 +92,15 @@ public class SelectorActivity extends Activity {
       colorString = "BLACK";
       boardString = null;
     } else {
-      boardSizeToIntent = jsonObject.get(BoardActivity.BOARD_SIZE_NAME).getAsInt();
-      colorString = jsonObject.get(BoardActivity.CURRENT_COLOR_NAME).getAsString();
-      boardString = (new Gson()).toJson(jsonObject.getAsJsonArray(BoardActivity.BOARD_NAME));
+      boardSizeToIntent = jsonObject.get(Serializer.BOARD_SIZE_NAME).getAsInt();
+      colorString = jsonObject.get(Serializer.CURRENT_COLOR_NAME).getAsString();
+      boardString = (new Gson()).toJson(jsonObject.getAsJsonArray(Serializer.BOARD_NAME));
     }
 
-    boardIntent.putExtra(BoardActivity.BOARD_SIZE_NAME, boardSizeToIntent);
-    boardIntent.putExtra(BoardActivity.EXTRA_HANDICAP, handicap);
-    boardIntent.putExtra(BoardActivity.CURRENT_COLOR_NAME, colorString);
-    boardIntent.putExtra(BoardActivity.BOARD_NAME, boardString);
+    boardIntent.putExtra(Serializer.BOARD_SIZE_NAME, boardSizeToIntent);
+    boardIntent.putExtra(Serializer.EXTRA_HANDICAP, handicap);
+    boardIntent.putExtra(Serializer.CURRENT_COLOR_NAME, colorString);
+    boardIntent.putExtra(Serializer.BOARD_NAME, boardString);
 
     startActivity(boardIntent);
   }

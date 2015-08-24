@@ -14,13 +14,7 @@ import java.io.OutputStreamWriter;
 
 public class BoardActivity extends Activity
                            implements  QuitDialogFragment.QuitDialogListener  {
-  public static final String EXTRA_HANDICAP = "handicap";
-  static final String SAVED_BOARD_FILENAME = "saved_board";
-  public static final String NO_SAVE_NAME = "noSave";
-  public static final String NO_SAVE_JSON = "{\"" + NO_SAVE_NAME + "\":true}";
-  public static final String CURRENT_COLOR_NAME = "currentColor";
-  public static final String BOARD_SIZE_NAME = "boardSize";
-  public static final String BOARD_NAME = "boardFrag";
+
   private BoardFragment boardFrag;
   boolean saveOnDestroy = true;
 
@@ -36,10 +30,10 @@ public class BoardActivity extends Activity
     }
 
     Intent intent = getIntent();
-    int handicap = intent.getIntExtra(EXTRA_HANDICAP, SelectorActivity.DEFAULT_HANDICAP);
-    String boardJson = intent.getStringExtra(BOARD_NAME);
-    String colorString = intent.getStringExtra(CURRENT_COLOR_NAME);
-    int boardSize = intent.getIntExtra(BOARD_SIZE_NAME, SelectorActivity.DEFAULT_BOARD_SIZE);
+    int handicap = intent.getIntExtra(Serializer.EXTRA_HANDICAP, SelectorActivity.DEFAULT_HANDICAP);
+    String boardJson = intent.getStringExtra(Serializer.BOARD_NAME);
+    String colorString = intent.getStringExtra(Serializer.CURRENT_COLOR_NAME);
+    int boardSize = intent.getIntExtra(Serializer.BOARD_SIZE_NAME, SelectorActivity.DEFAULT_BOARD_SIZE);
 
     setContentView(R.layout.game);
 
@@ -68,9 +62,9 @@ public class BoardActivity extends Activity
       json = boardFrag.toJson();
       // TODO: (eventually) test here if boardFrag was actually empty (or had only handicap stones) and should use NO_SAVE_STRING anyway
     } else {
-      json = NO_SAVE_JSON;
+      json = Serializer.NO_SAVE_JSON;
     }
-    File file = new File(getFilesDir(), SAVED_BOARD_FILENAME);
+    File file = new File(getFilesDir(), Serializer.SAVED_BOARD_FILENAME);
     try {
       saveStringToFile(file, json);
       // DEBUG:

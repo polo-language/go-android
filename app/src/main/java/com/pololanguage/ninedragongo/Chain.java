@@ -1,14 +1,7 @@
 package com.pololanguage.ninedragongo;
 
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
-
-import java.lang.reflect.Type;
 import java.util.HashSet;
 import java.util.Set;
-
 
 /** Track a single-color chain of stones */
 public class Chain {
@@ -62,14 +55,6 @@ public class Chain {
     stones.addAll(chain.stones);
     liberties.addAll(chain.liberties);
   }
-
-//  /** Removes the supplied stone and liberties */
-//  public void remove(Stone stone, Set<BoxCoords> libertiesToRemove) {
-//    if (!stones.remove(stone)) {
-//      throw new IllegalArgumentException("Stone not in chain so can't be removed");
-//    }
-//    liberties.removeAll(libertiesToRemove);
-//  }
 
   public void addLiberty(BoxCoords coords) {
     liberties.add(coords);

@@ -1,14 +1,10 @@
 package com.pololanguage.ninedragongo;
 
-
-import android.util.Log;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.Map;
-
 
 /**
  * Manages all game-play (i.e. non-visual) aspects of stone handling
@@ -66,14 +62,13 @@ public class MoveManager {
 
   /** Removes and returns last move from board */
   public Move undo() {
-    Log.v("MoveManager", "Undo: before: " + chains.size());
     Move move = history.stepBack();
     if (move == null) {
       return null;
     }
     Stone stone = move.getStone();
     Set<Stone> captured = move.getCaptured();
-    Chain chain = filled.remove(stone.coords);
+    Chain chain = filled.get(stone.coords);
     addToOpposingLiberties(stone);
 
     /* Remove and rebuild the current chain since it could have split, etc. */
@@ -81,8 +76,12 @@ public class MoveManager {
       throw new IllegalStateException("Popped stone keyed to null chain");
     }
     chains.remove(chain);
-    for (Stone s : chain.getStones()) {
-      if (s != stone) { Log.i("undo", "stone incorporating: (" + Integer.toString(s.coords.x) + ", " + Integer.toString(s.coords.y) + ")");
+    Set<Stone> stones = chain.getStones();
+    for (Stone s : stones) {
+      filled.remove(s.coords);
+    }
+    for (Stone s : stones) {
+      if (s != stone) {
           incorporateIntoChains(s);
       }
     }
@@ -92,7 +91,6 @@ public class MoveManager {
     }
 
     updateCaptureCount(stone.color, captured.size(), false);
-    Log.v("MoveManager", "Undo: after: " + chains.size());
     return move;
   }
 
@@ -115,18 +113,14 @@ public class MoveManager {
   }
 
   private boolean addStoneWithHistory(Stone stone, Set<Stone> captured, boolean modifyHistory) {
-    Log.v("MoveManager", "Add: before: " + chains.size());
-
     capture(stone, captured);
     if (!isSuicide(stone)) {
       incorporateIntoChains(stone);
       if (modifyHistory) {
         history.add(new Move(stone, captured));
       }
-      Log.v("MoveManager", "Add: after: " + chains.size());
       return true;
     } else {
-      Log.v("MoveManager", "Add: after: " + chains.size());
       return false;
     }
   }
@@ -136,7 +130,7 @@ public class MoveManager {
     return new NeighborChecker<Chain>().getMatchingNeighbors(new CheckCoords<Chain>() {
       public void check(Set<Chain> found, BoxCoords coords, Object criterion) {
         if (taken(coords) && filled.get(coords).getColor() == criterion) {
-          found.add(filled.get(coords)); Log.i("getNeighborChains", SelectorActivity.serializer.toJson(filled.get(coords)));
+          found.add(filled.get(coords));
         }
       }
     }, coords, color);
@@ -208,8 +202,8 @@ public class MoveManager {
    * Adds stone to existing chain or creates new chain if not connected to any like-colored chains
    * Merges chains as necessary if new stone connects two or more like-colored chains
    */
-  private synchronized void incorporateIntoChains(Stone stone) {
-    Set<Chain> friends = getNeighborChains(stone.coords, stone.color);  Log.i("incorporate", "num friends: " + Integer.toString(friends.size()));
+  private void incorporateIntoChains(Stone stone) {
+    Set<Chain> friends = getNeighborChains(stone.coords, stone.color);
     Chain merged;
     Iterator<Chain> iterator = friends.iterator();
     if (!iterator.hasNext()) {
@@ -245,7 +239,6 @@ public class MoveManager {
   private void addToOpposingLiberties(Stone stone) {
     for (Chain chain : getNeighborChains(stone.coords, stone.color.getOther())) {
       chain.addLiberty(stone.coords);
-      Log.v("MoveManager", "Add to opposing liberties");
     }
   }
 
@@ -261,24 +254,6 @@ public class MoveManager {
     history.clear();
     filled.clear();
   }
-
-  public String toJson() {
-    // TODO: iterate over history write to JSON; include head index
-//    public String toJson() {
-//      int numMoves = size();
-//      StoredMove[] moveArray = new StoredMove[numMoves];
-//      Stone stone;
-//
-//      for (int i = 0; i < numMoves; ++i) {
-//        stone = get(i);
-//        moveArray[i] = new StoredMove(i, stone.coords.x, stone.coords.y, stone.color);
-//      }
-//      return (new Gson()).toJson(moveArray);
-//    }
-//    return moves.toJson();
-    return "";
-  }
-
 
   /* Inner classes */
   /** Class enabling checking of neighboring coordinates based on some criterion */

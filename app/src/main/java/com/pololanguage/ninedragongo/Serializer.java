@@ -51,6 +51,13 @@ class Serializer {
   }
 
   /**
+   * Serialize a Set of BoxCoords
+   */
+  public String toJson(Set<BoxCoords> coordsSet) {
+    return gson.toJson(coordsSet);
+  }
+
+  /**
    * Serializes the BoxCoords class
    */
   private class BoxCoordsSerializer implements JsonSerializer<BoxCoords> {
@@ -112,20 +119,4 @@ class Serializer {
       return jsonObject;
     }
   }
-
-//  /**
-//   * Serializes the History class
-//   */
-//  private class HistorySerializer implements JsonSerializer<Move> {
-//    @Override
-//    public JsonElement serialize(Move , Type typeOfSrc, JsonSerializationContext context) {
-//      JsonObject jsonObject = new JsonObject();
-//
-//      jsonObject.addProperty("color", chain.getColor().toString());
-//      jsonObject.add("stones", gson.toJsonTree(chain.getStones(), stoneSetType));
-//      jsonObject.add("liberties", gson.toJsonTree(chain.getLiberties(), libertiesSetType));
-//
-//      return jsonObject;
-//    }
-//  }
 }

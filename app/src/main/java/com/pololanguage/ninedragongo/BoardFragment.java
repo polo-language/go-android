@@ -1,6 +1,5 @@
 package com.pololanguage.ninedragongo;
 
-
 import android.app.Fragment;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
@@ -14,7 +13,6 @@ import com.google.gson.Gson;
 
 import java.util.HashSet;
 import java.util.Set;
-
 
 public class BoardFragment extends Fragment
                            implements View.OnTouchListener {
@@ -285,11 +283,6 @@ public class BoardFragment extends Fragment
                                                       boardSize,
                                                       moveManager.getHistory(),
                                                       moveManager.getChains());
-//    return "{\"" +
-//        BoardActivity.CURRENT_COLOR_NAME + "\":\"" + currentColor + "\",\"" +
-//        BoardActivity.BOARD_SIZE_NAME + "\":" + boardSize + ",\"" +
-//        BoardActivity.BOARD_NAME + "\":" + moveManager.toJson() +
-//        "}";
   }
 
   //////////////////////////////////

@@ -29,18 +29,12 @@ public class BoardActivity extends Activity
       getActionBar().setDisplayOptions(ActionBar.DISPLAY_SHOW_HOME | ActionBar.DISPLAY_SHOW_TITLE);
     }
 
-    Intent intent = getIntent();
-    int handicap = intent.getIntExtra(Serializer.EXTRA_HANDICAP, SelectorActivity.DEFAULT_HANDICAP);
-    String boardJson = intent.getStringExtra(Serializer.BOARD_NAME);
-    String colorString = intent.getStringExtra(Serializer.CURRENT_COLOR_NAME);
-    int boardSize = intent.getIntExtra(Serializer.BOARD_SIZE_NAME, SelectorActivity.DEFAULT_BOARD_SIZE);
-
     setContentView(R.layout.game);
 
     if (findViewById(R.id.board_container) != null) {
       if (savedInstanceState != null) { return; }
 
-      boardFrag = BoardFragment.newInstance(boardSize, handicap, colorString, boardJson);
+      boardFrag = BoardFragment.newInstance(getIntent()); //boardSize, handicap, colorString, historyJson, chainsJson);
       getFragmentManager().beginTransaction()
                           .add(R.id.board_container, boardFrag).commit();
     }

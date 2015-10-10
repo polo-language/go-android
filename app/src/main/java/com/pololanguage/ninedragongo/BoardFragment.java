@@ -1,6 +1,7 @@
 package com.pololanguage.ninedragongo;
 
 import android.app.Fragment;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
@@ -41,19 +42,35 @@ public class BoardFragment extends Fragment
   private static final BoxCoords[] NINETEEN_HANDICAPS = {new BoxCoords(15, 3), new BoxCoords(3, 15), new BoxCoords(15, 15), new BoxCoords(3, 3), new BoxCoords(9, 9)};
 
   /** BoardFragment factory */
-  protected static BoardFragment newInstance(int boardSize, int handicap, String colorString, String boardString) {
+  protected static BoardFragment newInstance(Intent intent) { //int boardSize, int handicap, String colorString, String boardString) {
     BoardFragment frag = new BoardFragment();
-    frag.boardSize = boardSize;
-    frag.handicap = handicap;
+
+    /* board size validated in BoardView constructor in switch on size */
+    frag.boardSize = intent.getIntExtra(Serializer.KEYS.SIZE, SelectorActivity.DEFAULT_BOARD_SIZE);
+    String historyJson = intent.getStringExtra(Serializer.KEYS.HISTORY);
+    String chainsJson = intent.getStringExtra(Serializer.KEYS.CHAINS);
+    String colorString = intent.getStringExtra(Serializer.KEYS.COLOR);
+    frag.handicap = intent.getIntExtra(Serializer.EXTRA_HANDICAP, SelectorActivity.DEFAULT_HANDICAP);
     try {
       frag.currentColor = StoneColor.valueOf(colorString);
     } catch (IllegalArgumentException e) {
       frag.currentColor = StoneColor.BLACK;
     }
 
-    if (boardString != null) {
-      frag.storedMoves = (new Gson()).fromJson(boardString, StoredMove[].class);
-    }
+    // TODO: check values for validity
+    // TODO: write handlers for history and chains
+
+
+    // TODO
+//    frag.moveManager = new MoveManager(frag.boardSize,
+//                                       Serializer....
+//                                       Serializer....);
+
+    frag.moveManager = new MoveManager(frag.boardSize);
+
+//    if (!boardString.isEmpty()) {
+//      frag.storedMoves = new Gson().fromJson(boardString, StoredMove[].class);
+//    }
     return frag;
   }
 
@@ -62,7 +79,6 @@ public class BoardFragment extends Fragment
     super.onCreate(savedInstanceState);
     setRetainInstance(true);
     DisplayMetrics displayMetrics = getActivity().getResources().getDisplayMetrics();
-    moveManager = new MoveManager(boardSize);
     boardWidth = Math.min(displayMetrics.widthPixels, displayMetrics.heightPixels);
   }
 
@@ -126,11 +142,16 @@ public class BoardFragment extends Fragment
   }
 
   private void placeStoredMoves() {
-    for (StoredMove move : storedMoves) {
-      currentColor = move.color;
-      placeStone(new BoxCoords(move.x, move.y));
+    for (Chain chain : moveManager.getChains()) {
+      for (Stone stone : chain.getStones()) {
+        board.renderStone(stone);
+      }
     }
-    currentColor = currentColor.getOther();
+//    for (StoredMove move : storedMoves) {
+//      currentColor = move.color;
+//      placeStone(new BoxCoords(move.x, move.y));
+//    }
+//    currentColor = currentColor.getOther();
   }
 
   private void placeStoneAtBoxCoords() {
@@ -279,10 +300,11 @@ public class BoardFragment extends Fragment
   //////////////////////////////////
   // SERIALIZATION:
   String toJson() {
-    return Serializer.serializer.serializeBoard(currentColor,
-                                                      boardSize,
-                                                      moveManager.getHistory(),
-                                                      moveManager.getChains());
+    return Serializer.serializeBoard(getActivity(),
+                                     currentColor,
+                                     boardSize,
+                                     moveManager.getHistory(),
+                                     moveManager.getChains());
   }
 
   //////////////////////////////////

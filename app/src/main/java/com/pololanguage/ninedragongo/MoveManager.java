@@ -24,6 +24,7 @@ public class MoveManager {
   private int boardSize;
 
   /** Track captured stones */
+  // TODO: track captures and persist on save
   private int whitesCaptures;
   private int blacksCaptures;
 
@@ -35,6 +36,19 @@ public class MoveManager {
     boardSize = size;
     whitesCaptures = 0;
     blacksCaptures = 0;
+  }
+
+  MoveManager(int size, Set<Chain> savedChains, History<Move> savedHistory) {
+    chains = savedChains;
+    history = savedHistory;
+    boardSize = size;
+    whitesCaptures = 0;
+    blacksCaptures = 0;
+
+    filled = new HashMap<>();
+    for (Chain chain : chains) {
+      updateFilled(chain, chain.getStones());
+    }
   }
 
   Set<Chain> getChains() {
@@ -229,7 +243,7 @@ public class MoveManager {
     filled.put(stone.coords, chain);
   }
 
-  /** Sets chain as the value for all stones in filled */
+  /** Sets chain as the value for all provided stones */
   private void updateFilled(Chain chain, Set<Stone> stones) {
     for (Stone stone : stones) {
       filled.put(stone.coords, chain);

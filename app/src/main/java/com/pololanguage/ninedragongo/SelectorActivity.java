@@ -46,7 +46,7 @@ public class SelectorActivity extends Activity {
             .parse(new InputStreamReader(fileInputStream, "UTF-8"))
             .getAsJsonObject();
 
-        if (jsonObject.get(Serializer.NO_SAVE_NAME) != null) {
+        if (jsonObject.get(Serializer.NO_SAVE_KEY) != null) {
           loadSelectorView();
         } else {
           // TODO: validate loaded values
@@ -83,24 +83,22 @@ public class SelectorActivity extends Activity {
    */
   private void loadBoard(JsonObject jsonObject) {
     Intent boardIntent = new Intent(this, BoardActivity.class);
-    int boardSizeToIntent;
-    String colorString;
-    String boardString;
 
-    if (jsonObject == null) {
-      boardSizeToIntent = boardSize;
-      colorString = "BLACK";
-      boardString = null;
-    } else {
-      boardSizeToIntent = jsonObject.get(Serializer.BOARD_SIZE_NAME).getAsInt();
-      colorString = jsonObject.get(Serializer.CURRENT_COLOR_NAME).getAsString();
-      boardString = (new Gson()).toJson(jsonObject.getAsJsonArray(Serializer.BOARD_NAME));
+    if (jsonObject == null) {   /* Use values from selector */
+      boardIntent.putExtra(Serializer.KEYS.SIZE, boardSize);
+      boardIntent.putExtra(Serializer.EXTRA_HANDICAP, handicap);
+      boardIntent.putExtra(Serializer.KEYS.COLOR, StoneColor.BLACK.toString());
+      boardIntent.putExtra(Serializer.KEYS.HISTORY, "");
+      boardIntent.putExtra(Serializer.KEYS.CHAINS, "");
+    } else {                    /* parse and use values read from disk */
+      boardIntent.putExtra(Serializer.KEYS.SIZE, jsonObject.get(Serializer.KEYS.SIZE).getAsInt());
+      boardIntent.putExtra(Serializer.EXTRA_HANDICAP, handicap);
+      boardIntent.putExtra(Serializer.KEYS.COLOR, jsonObject.get(Serializer.KEYS.COLOR).getAsString());
+      boardIntent.putExtra(Serializer.KEYS.HISTORY,
+                           new Gson().toJson(jsonObject.getAsJsonArray(Serializer.KEYS.HISTORY)));
+      boardIntent.putExtra(Serializer.KEYS.CHAINS,
+          new Gson().toJson(jsonObject.getAsJsonArray(Serializer.KEYS.CHAINS)));
     }
-
-    boardIntent.putExtra(Serializer.BOARD_SIZE_NAME, boardSizeToIntent);
-    boardIntent.putExtra(Serializer.EXTRA_HANDICAP, handicap);
-    boardIntent.putExtra(Serializer.CURRENT_COLOR_NAME, colorString);
-    boardIntent.putExtra(Serializer.BOARD_NAME, boardString);
 
     startActivity(boardIntent);
   }

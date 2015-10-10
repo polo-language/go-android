@@ -60,11 +60,13 @@ public class BoardActivity extends Activity
     }
     File file = new File(getFilesDir(), Serializer.SAVED_BOARD_FILENAME);
     try {
+      if (json == null) {
+        throw new IOException("JSON returned as null from board#toJson");
+      }
       saveStringToFile(file, json);
-      // DEBUG:
-      Log.i("saved: ", json);
-    } catch (IOException ioE) {
-      Log.e("Board state not saved", ioE.toString());
+      Log.i("saved: ", json);   // DEBUG:
+    } catch (IOException e) {
+      Log.e("Board state not saved", e.toString());
     }
   }
 

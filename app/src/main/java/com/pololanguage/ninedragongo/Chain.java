@@ -15,6 +15,12 @@ public class Chain {
     liberties = new HashSet<>();
   }
 
+  Chain(StoneColor c, Set<Stone> savedStones, Set<BoxCoords> savedCoords) {
+    color = c;
+    stones = savedStones;
+    liberties = savedCoords;
+  }
+
   /** Public access to the set of stones */
   public Set<Stone> getStones() {
     return stones;

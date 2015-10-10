@@ -43,7 +43,7 @@ class Serializer {
     static final String STONES = "stones";
     static final String STONE = "stone";
     static final String CAPTURED = "captured";
-    static final String LIBERTIES = "stones";
+    static final String LIBERTIES = "liberties";
     static final String X = "x";
     static final String Y = "y";
   };
@@ -59,7 +59,7 @@ class Serializer {
   public static String serializeBoard(Context context, StoneColor color, int boardSize, List<Move> history, Set<Chain> chains) {
     gson = new GsonBuilder()
         .registerTypeAdapter(Stone.class, new StoneCoordsAdapter(context))
-        .registerTypeAdapter(Chain.class, new ChainSerializer())
+        .registerTypeAdapter(Chain.class, new ChainAdapter())
         .registerTypeAdapter(Move.class, new MoveAdapter())
         .create();
     StringWriter stringWriter = new StringWriter();
@@ -81,7 +81,7 @@ class Serializer {
   public static Set<Chain> deserializeChains(Context context, String json) {
     Gson gson = new GsonBuilder()
         .registerTypeAdapter(Stone.class, new StoneCoordsAdapter(context))
-        .registerTypeAdapter(Chain.class, new ChainSerializer())
+        .registerTypeAdapter(Chain.class, new ChainAdapter())
         .create();
     // TODO
     return new HashSet<>();
@@ -205,56 +205,55 @@ class Serializer {
   }
 
   /**
-   * Serializes the Chain class
+   * De-/Serializes the Chain class
    */
-  private static class ChainSerializer implements JsonSerializer<Chain> {
+  private static class ChainAdapter extends TypeAdapter<Chain> {
     @Override
-    public JsonElement serialize(Chain chain, Type typeOfSrc, JsonSerializationContext context) {
-      JsonObject jsonObject = new JsonObject();
-      jsonObject.addProperty(KEYS.COLOR, chain.getColor().toString());
-      jsonObject.add(KEYS.STONES, gson.toJsonTree(chain.getStones(), STONE_SET_TYPE));
-      jsonObject.add(KEYS.LIBERTIES, gson.toJsonTree(chain.getLiberties(), LIBERTIES_SET_TYPE));
-      return jsonObject;
+    public Chain read(JsonReader reader) throws IOException {
+      StoneColor color = null;
+      Set<Stone> stones = null;
+      Set<BoxCoords> liberties = null;
+
+      if (reader.peek() == JsonToken.NULL) {
+        reader.nextNull();
+        return null;
+      }
+      reader.beginObject();
+      while (reader.hasNext()) {
+        switch (reader.nextName()) {
+          case KEYS.COLOR:
+            color = StoneColor.valueOf(reader.nextString());
+            break;
+          case KEYS.STONES:
+            stones = gson.fromJson(reader, STONE_SET_TYPE);
+            break;
+          case KEYS.LIBERTIES:
+            liberties = gson.fromJson(reader, LIBERTIES_SET_TYPE);
+            break;
+          default:
+            reader.skipValue();
+            break;
+        }
+      }
+      reader.endObject();
+      if (color == null || stones == null || liberties == null) {
+        return null;
+      }
+      return new Chain(color, stones, liberties);
+    }
+
+    @Override
+    public void write(JsonWriter writer, Chain chain) throws IOException {
+      if (chain == null) {
+        writer.nullValue();
+        return;
+      }
+      writer.beginObject();
+      writer.name(KEYS.COLOR).value(chain.getColor().toString());
+
+      writer.name(KEYS.STONES).jsonValue(gson.toJson(chain.getStones(), STONE_SET_TYPE));
+      writer.name(KEYS.LIBERTIES).jsonValue(gson.toJson(chain.getLiberties(), LIBERTIES_SET_TYPE));
+      writer.endObject();
     }
   }
-
-  /**
-   * Serializes the Stone class
-   */
-//  private static class StoneSerializer implements JsonSerializer<Stone> {
-//    @Override
-//    public JsonElement serialize(Stone stone, Type typofSrc, JsonSerializationContext context) {
-//      JsonObject jsonObject = new JsonObject();
-//      jsonObject.addProperty("color", stone.color.toString());
-//      jsonObject.addProperty("coords", new BoxCoordsSerializer().serialize(stone.coords, BoxCoords.class, context).toString());
-//      return jsonObject;
-//    }
-//  }
-
-  /**
-   * Serializes the Move class
-   */
-//  private static class MoveSerializer implements JsonSerializer<Move> {
-//    @Override
-//    public JsonElement serialize(Move move, Type typeOfSrc, JsonSerializationContext context) {
-//      JsonObject jsonObject = new JsonObject();
-//      jsonObject.add("stone", new StoneSerializer().serialize(move.getStone(), Stone.class, context));
-//      jsonObject.add("captured", gson.toJsonTree(move.getCaptured(), STONE_SET_TYPE));
-//      return jsonObject;
-//    }
-//  }
-
-//  /**
-//   * Serialize one chain
-//   */
-//  public static String toJson(Chain chain) {
-//    return gson.toJson(chain);
-//  }
-//
-//  /**
-//   * Serialize a Set of BoxCoords
-//   */
-//  public static String toJson(Set<BoxCoords> coordsSet) {
-//    return gson.toJson(coordsSet);
-//  }
 }

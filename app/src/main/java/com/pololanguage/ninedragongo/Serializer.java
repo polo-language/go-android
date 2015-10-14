@@ -4,10 +4,6 @@ import android.content.Context;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.JsonSerializer;
 import com.google.gson.TypeAdapter;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
@@ -17,11 +13,8 @@ import com.google.gson.stream.JsonWriter;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.lang.reflect.Type;
-import java.security.Key;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.StringTokenizer;
 
 /**
  * Handles all de-/serialization of game state
@@ -31,8 +24,8 @@ class Serializer {
   // Stone are registered to serialize to BoxCoords only!
   private static final Type STONE_SET_TYPE = new TypeToken<Set<Stone>>(){}.getType();
   private static final Type LIBERTIES_SET_TYPE = new TypeToken<Set<BoxCoords>>(){}.getType();
-  private static final Type CHAIN_LIST_TYPE = new TypeToken<List<Chain>>(){}.getType();
-  private static final Type MOVE_LIST_TYPE = new TypeToken<List<Move>>(){}.getType();
+  private static final Type CHAIN_SET_TYPE = new TypeToken<Set<Chain>>(){}.getType();
+  private static final Type MOVE_HISTORY_TYPE = new TypeToken<History<Move>>(){}.getType();
   private static Gson gson;
 
   protected static class KEYS {
@@ -44,6 +37,7 @@ class Serializer {
     static final String STONE = "stone";
     static final String CAPTURED = "captured";
     static final String LIBERTIES = "liberties";
+    static final String COORDS = "coords";
     static final String X = "x";
     static final String Y = "y";
   };
@@ -68,8 +62,8 @@ class Serializer {
       writer.beginObject();
       writer.name(KEYS.COLOR).value(color.toString());
       writer.name(KEYS.SIZE).value(boardSize);
-      writer.name(KEYS.HISTORY).jsonValue(gson.toJson(history, MOVE_LIST_TYPE));
-      writer.name(KEYS.CHAINS).jsonValue(gson.toJson(chains, CHAIN_LIST_TYPE));
+      writer.name(KEYS.HISTORY).jsonValue(gson.toJson(history, MOVE_HISTORY_TYPE));
+      writer.name(KEYS.CHAINS).jsonValue(gson.toJson(chains, CHAIN_SET_TYPE));
       writer.endObject();
       writer.close();
     } catch (IOException e) {
@@ -78,13 +72,22 @@ class Serializer {
     return stringWriter.toString();
   }
 
+  /** Deserialize a Chain Set */
   public static Set<Chain> deserializeChains(Context context, String json) {
-    Gson gson = new GsonBuilder()
+    gson = new GsonBuilder()
         .registerTypeAdapter(Stone.class, new StoneCoordsAdapter(context))
         .registerTypeAdapter(Chain.class, new ChainAdapter())
         .create();
-    // TODO
-    return new HashSet<>();
+    return gson.fromJson(json, CHAIN_SET_TYPE);
+  }
+
+  /** Deserialize a Move History */
+  public static History<Move> deserializeHistory(Context context, String json) {
+    // TODO: write full serializer for history including head and max fields
+    gson = new GsonBuilder()
+        .registerTypeAdapter(Stone.class, new StoneCoordsAdapter(context))
+        .create();
+    return gson.fromJson(json, MOVE_HISTORY_TYPE);
   }
 
   /**
@@ -135,26 +138,56 @@ class Serializer {
   }
 
   /**
-   * De-/Serializes the Stone class's BoxCoords only
+   * De-/Serializes the Stone class
    */
   private static class StoneCoordsAdapter extends TypeAdapter<Stone> {
-
     Context context;
+
     StoneCoordsAdapter (Context ctxt) {
       context = ctxt;
     }
 
     @Override
-    public Stone read(JsonReader reader) throws IOException{
-      /* arbitrarily return stones as black since interface forces returning a Stone */
-      return new Stone(context, new BoxCoordsAdapter().read(reader), StoneColor.BLACK);
+    public Stone read(JsonReader reader) throws IOException {
+      BoxCoords coords = null;
+      StoneColor color = null;
+
+      if (reader.peek() == JsonToken.NULL) {
+        reader.nextNull();
+        return null;
+      }
+      reader.beginObject();
+      while (reader.hasNext()) {
+        switch (reader.nextName()) {
+          case KEYS.COORDS:
+            coords = gson.fromJson(reader, BoxCoords.class);
+            break;
+          case KEYS.COLOR:
+            color = gson.fromJson(reader, StoneColor.class);
+            break;
+          default:
+            reader.skipValue();
+            break;
+        }
+      }
+      reader.endObject();
+      if (coords == null || color == null) {
+        return null;
+      }
+      return new Stone(context, coords, color);
     }
 
     @Override
     public void write(JsonWriter writer, Stone stone) throws IOException {
-      new BoxCoordsAdapter().write(writer, stone.coords);
+      if (stone == null) {
+        writer.nullValue();
+        return;
+      }
+      writer.beginObject();
+      writer.name(KEYS.COORDS).jsonValue(gson.toJson(stone.coords));
+      writer.name(KEYS.COLOR).value(stone.color.toString());
+      writer.endObject();
     }
-
   }
 
   /**

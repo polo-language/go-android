@@ -1,7 +1,7 @@
-package com.pololanguage.pologo;
-
+package com.pololanguage.ninedragongo;
 
 import android.app.Fragment;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
@@ -15,15 +15,11 @@ import com.google.gson.Gson;
 import java.util.HashSet;
 import java.util.Set;
 
-
 public class BoardFragment extends Fragment
                            implements View.OnTouchListener {
   private int boardSize;
   private int handicap;
   private int boardWidth;
-
-  /** Holds saved state read from file during board setup */
-  private StoredMove[] storedMoves;
 
   /** Tracks sequential passes (two passes in a row ends the game) */
   private boolean firstPass = false;
@@ -32,10 +28,12 @@ public class BoardFragment extends Fragment
   private boolean firstTouch = true;
 
   private StoneColor currentColor;
-  private ChainManager chainManager;
+  private MoveManager moveManager;
   private BoardView board;
   private Stone cursor;
   private Box box;
+
+  private Intent intent;
 
   /** Standard handicap board coordinates */
   private static final BoxCoords[] NINE_HANDICAPS = {new BoxCoords(6, 2), new BoxCoords(2, 6), new BoxCoords(6, 6), new BoxCoords(2, 2), new BoxCoords(4, 4)};
@@ -43,29 +41,37 @@ public class BoardFragment extends Fragment
   private static final BoxCoords[] NINETEEN_HANDICAPS = {new BoxCoords(15, 3), new BoxCoords(3, 15), new BoxCoords(15, 15), new BoxCoords(3, 3), new BoxCoords(9, 9)};
 
   /** BoardFragment factory */
-  protected static BoardFragment newInstance(int boardSize, int handicap, String colorString, String boardString) {
+  protected static BoardFragment newInstance(Intent intent) { //int boardSize, int handicap, String colorString, String boardString) {
     BoardFragment frag = new BoardFragment();
-    frag.boardSize = boardSize;
-    frag.handicap = handicap;
-    try {
-      frag.currentColor = StoneColor.valueOf(colorString);
-    } catch (IllegalArgumentException e) {
-      frag.currentColor = StoneColor.BLACK;
-    }
-
-    if (boardString != null) {
-      frag.storedMoves = (new Gson()).fromJson(boardString, StoredMove[].class);
-    }
+    frag.intent = intent;
     return frag;
   }
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
+    String chainJson;
     super.onCreate(savedInstanceState);
     setRetainInstance(true);
     DisplayMetrics displayMetrics = getActivity().getResources().getDisplayMetrics();
-    chainManager = new ChainManager(boardSize);
     boardWidth = Math.min(displayMetrics.widthPixels, displayMetrics.heightPixels);
+    /* board size validated in BoardView constructor in switch on size */
+    boardSize = intent.getIntExtra(Serializer.KEYS.SIZE, SelectorActivity.DEFAULT_BOARD_SIZE);
+    handicap = intent.getIntExtra(Serializer.EXTRA_HANDICAP, SelectorActivity.DEFAULT_HANDICAP);
+    try {
+      currentColor = StoneColor.valueOf(intent.getStringExtra(Serializer.KEYS.COLOR));
+    } catch (IllegalArgumentException e) {
+      currentColor = StoneColor.BLACK;
+    }
+
+    chainJson = intent.getStringExtra(Serializer.KEYS.CHAINS);
+    if (chainJson.isEmpty()) {  /* checks if we're getting saved state data or a new game */
+      moveManager = new MoveManager(boardSize);
+    } else {                    /* saved state data */
+      moveManager = new MoveManager(boardSize,
+                                    Serializer.deserializeChains(getActivity(), chainJson),
+                                    Serializer.deserializeHistory(getActivity(), intent.getStringExtra(Serializer.KEYS.HISTORY)));
+      intent = null; /* manual garbage collection */
+    }
   }
 
   @Override
@@ -85,7 +91,7 @@ public class BoardFragment extends Fragment
     layoutBoard();
     board.setOnTouchListener(this);
 
-    if (storedMoves == null) {
+    if (moveManager.getChains().size() == 0) {
       addHandicapStones();
     } else {
       placeStoredMoves();
@@ -128,11 +134,11 @@ public class BoardFragment extends Fragment
   }
 
   private void placeStoredMoves() {
-    for (StoredMove move : storedMoves) {
-      currentColor = move.color;
-      placeStone(new BoxCoords(move.x, move.y));
+    for (Chain chain : moveManager.getChains()) {
+      for (Stone stone : chain.getStones()) {
+        board.renderStone(stone);
+      }
     }
-    currentColor = currentColor.getOther();
   }
 
   private void placeStoneAtBoxCoords() {
@@ -140,9 +146,12 @@ public class BoardFragment extends Fragment
   }
 
   private void placeStone(BoxCoords coords) {
+    board.setClickable(false);
+
     Stone stone = new Stone(getActivity(), coords, currentColor);
     Set<Stone> toKill = new HashSet<>();
-    if (chainManager.addStone(stone, toKill)) {
+
+    if (moveManager.addStone(stone, toKill)) {
       board.renderStone(stone);
       toggleColor();
       removeCursor();
@@ -153,6 +162,7 @@ public class BoardFragment extends Fragment
     } else {
       Toast.makeText(getActivity(), R.string.no_suicide, Toast.LENGTH_LONG).show();
     }
+    board.setClickable(true);
   }
 
   @Override
@@ -176,7 +186,7 @@ public class BoardFragment extends Fragment
 
   private void snapBoxToGrid(int x, int y) {
     BoxCoords coords = board.getNearestGridCoords(x, y);
-    if (!chainManager.taken(coords)) {
+    if (!moveManager.taken(coords)) {
       box.setCoords(coords);
       board.setViewMargins(box, coords);
     }
@@ -204,27 +214,51 @@ public class BoardFragment extends Fragment
     currentColor = currentColor.getOther();
   }
 
-  //////////////////////////////////
-  // BUTTON onClick LISTENERS
+  /* BUTTON onClick LISTENERS */
+  /**
+   * Undo previous move if past moves are available
+   * Removes stone and adds back any chains captured by this move
+   */
   public void undo() {
-    if (chainManager.hasNoMoves()) {
-      Toast.makeText(getActivity(), R.string.no_moves_to_undo, Toast.LENGTH_LONG).show();
-      return;
+    Move move = moveManager.undo();
+    if (move == null) {
+      Toast.makeText(getActivity(), R.string.no_moves_to_undo, Toast.LENGTH_SHORT).show();
+    } else {
+      board.removeView(move.getStone());
+      for (Stone stone : move.getCaptured()) {
+        board.addView(stone);
+      }
+      removeCursor();
+      toggleColor();
     }
-    Stone stone = chainManager.popStone();
-    board.removeView(stone);
-    removeCursor();
-    toggleColor();
-    Toast.makeText(getActivity(),
-            stone.color == StoneColor.BLACK ?
-                    R.string.undo_black : R.string.undo_white,
-            Toast.LENGTH_SHORT).show();
   }
 
-  public void pass() {
+  /**
+   * Redo next move if future moves are available
+   * Adds back stone and removes any chains captured by it
+   */
+  public void redo() {
+    Move move = moveManager.redo();
+    if (move == null) {
+      Toast.makeText(getActivity(), R.string.no_future_to_redo, Toast.LENGTH_SHORT).show();
+    } else {
+      for (Stone stone : move.getCaptured()) {
+        board.removeView(stone);
+      }
+      board.addView(move.getStone());
+      removeCursor();
+      toggleColor();
+    }
+  }
+
+  /**
+   * Pass this player's move and toggle to next next player's color
+   * @return true if this pass quits the game (second pass in a row)
+   */
+  public boolean pass() {
     if (firstPass) {
       endGame();
-      return;
+      return true;
     }
     removeCursor();
     Toast.makeText(getActivity(),
@@ -233,33 +267,34 @@ public class BoardFragment extends Fragment
             Toast.LENGTH_SHORT).show();
     toggleColor();
     firstPass = true;
+    return false;
   }
 
   public void endGame() {
     removeCursor();
     board.setOnTouchListener(null);
     board.setClickable(false);
-    getActivity().findViewById(R.id.undo_button).setEnabled(false);
-    getActivity().findViewById(R.id.pass_button).setEnabled(false);
     getActivity().findViewById(R.id.game_over).setVisibility(View.VISIBLE);
   }
 
   public void reset() {
     board.removeAllViews();
-    chainManager.reset();
+    moveManager.reset();
     board.setOnTouchListener(this);
-    getActivity().findViewById(R.id.undo_button).setEnabled(true);
-    getActivity().findViewById(R.id.pass_button).setEnabled(true);
     getActivity().findViewById(R.id.game_over).setVisibility(View.INVISIBLE);
-    Toast.makeText(getActivity(), R.string.reset, Toast.LENGTH_LONG).show();
   }
 
   //////////////////////////////////
   // SERIALIZATION:
-  String getJson() {
-    return "{\"" + BoardActivity.CURRENT_COLOR_NAME + "\":\"" + currentColor + "\",\"" +
-        BoardActivity.BOARD_SIZE_NAME + "\":" + boardSize + ",\"" +
-        BoardActivity.BOARD_NAME + "\":" + chainManager.toJson() + "}";
+  String toJson() {
+    if (currentColor == null) {   /* return null if we haven't been initialized yet */
+      return null;
+    }
+    return Serializer.serializeBoard(getActivity(),
+                                     currentColor,
+                                     boardSize,
+                                     moveManager.getHistory(),
+                                     moveManager.getChains());
   }
 
   //////////////////////////////////

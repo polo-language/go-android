@@ -1,4 +1,4 @@
-package com.pololanguage.pologo;
+package com.pololanguage.ninedragongo;
 
 /**
  * Holds zero-indexed game position coordinates
@@ -8,7 +8,8 @@ package com.pololanguage.pologo;
  * </p>
  */
 public class BoxCoords {
-  int x, y;
+  public int x;
+  public int y;
 
   BoxCoords(int x, int y) {
     if (x < -1 || 19 < x || y < -1 || 19 < y) {

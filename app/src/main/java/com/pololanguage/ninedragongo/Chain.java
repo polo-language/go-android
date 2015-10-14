@@ -1,13 +1,11 @@
-package com.pololanguage.pologo;
-
+package com.pololanguage.ninedragongo;
 
 import java.util.HashSet;
 import java.util.Set;
 
-
 /** Track a single-color chain of stones */
 public class Chain {
-  StoneColor color;
+  private StoneColor color;
   private Set<Stone> stones;
   private Set<BoxCoords> liberties;
 
@@ -17,9 +15,25 @@ public class Chain {
     liberties = new HashSet<>();
   }
 
+  Chain(StoneColor c, Set<Stone> savedStones, Set<BoxCoords> savedCoords) {
+    color = c;
+    stones = savedStones;
+    liberties = savedCoords;
+  }
+
   /** Public access to the set of stones */
   public Set<Stone> getStones() {
     return stones;
+  }
+
+  /** Public access to the set of liberties */
+  public Set<BoxCoords> getLiberties() {
+    return liberties;
+  }
+
+  /** Public access to the color */
+  public StoneColor getColor() {
+    return color;
   }
 
   /** Returns number of stones in chain */
@@ -47,14 +61,6 @@ public class Chain {
     stones.addAll(chain.stones);
     liberties.addAll(chain.liberties);
   }
-
-//  /** Removes the supplied stone and liberties */
-//  public void remove(Stone stone, Set<BoxCoords> libertiesToRemove) {
-//    if (!stones.remove(stone)) {
-//      throw new IllegalArgumentException("Stone not in chain so can't be removed");
-//    }
-//    liberties.removeAll(libertiesToRemove);
-//  }
 
   public void addLiberty(BoxCoords coords) {
     liberties.add(coords);

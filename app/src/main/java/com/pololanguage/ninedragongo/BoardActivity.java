@@ -1,4 +1,4 @@
-package com.pololanguage.pologo;
+package com.pololanguage.ninedragongo;
 
 import android.app.ActionBar;
 import android.app.Activity;
@@ -14,14 +14,8 @@ import java.io.OutputStreamWriter;
 
 public class BoardActivity extends Activity
                            implements  QuitDialogFragment.QuitDialogListener  {
-  public static final String EXTRA_HANDICAP = "handicap";
-  static final String SAVED_BOARD_FILENAME = "saved_board";
-  public static final String NO_SAVE_NAME = "noSave";
-  public static final String NO_SAVE_JSON = "{\"" + NO_SAVE_NAME + "\":true}";
-  public static final String CURRENT_COLOR_NAME = "currentColor";
-  public static final String BOARD_SIZE_NAME = "boardSize";
-  public static final String BOARD_NAME = "board";
-  private BoardFragment board;
+
+  private BoardFragment boardFrag;
   boolean saveOnDestroy = true;
 
   @Override
@@ -35,20 +29,14 @@ public class BoardActivity extends Activity
       getActionBar().setDisplayOptions(ActionBar.DISPLAY_SHOW_HOME | ActionBar.DISPLAY_SHOW_TITLE);
     }
 
-    Intent intent = getIntent();
-    int handicap = intent.getIntExtra(EXTRA_HANDICAP, SelectorActivity.DEFAULT_HANDICAP);
-    String boardJson = intent.getStringExtra(BOARD_NAME);
-    String colorString = intent.getStringExtra(CURRENT_COLOR_NAME);
-    int boardSize = intent.getIntExtra(BOARD_SIZE_NAME, SelectorActivity.DEFAULT_BOARD_SIZE);
-
     setContentView(R.layout.game);
 
     if (findViewById(R.id.board_container) != null) {
       if (savedInstanceState != null) { return; }
 
-      board = BoardFragment.newInstance(boardSize, handicap, colorString, boardJson);
+      boardFrag = BoardFragment.newInstance(getIntent()); //boardSize, handicap, colorString, historyJson, chainsJson);
       getFragmentManager().beginTransaction()
-                          .add(R.id.board_container, board).commit();
+                          .add(R.id.board_container, boardFrag).commit();
     }
   }
 
@@ -60,23 +48,25 @@ public class BoardActivity extends Activity
     super.onDestroy();
   }
 
-  void saveBoardToFile(Boolean saveGameState) {
-    if (board == null) { return; }
+  private void saveBoardToFile(Boolean saveGameState) {
+    if (boardFrag == null) { return; }
 
     String json;
     if (saveGameState) {
-      json = board.getJson();
-      // TODO: (eventually) test here if board was actually empty (or had only handicap stones) and should use NO_SAVE_STRING anyway
+      json = boardFrag.toJson();
+      // TODO: (eventually) test here if boardFrag was actually empty (or had only handicap stones) and should use NO_SAVE_STRING anyway
     } else {
-      json = NO_SAVE_JSON;
+      json = Serializer.NO_SAVE_JSON;
     }
-    File file = new File(getFilesDir(), SAVED_BOARD_FILENAME);
+    File file = new File(getFilesDir(), Serializer.SAVED_BOARD_FILENAME);
     try {
+      if (json == null) {
+        throw new IOException("JSON returned as null from board#toJson");
+      }
       saveStringToFile(file, json);
-      // DEBUG:
-      //Log.i("saved: ", json);
-    } catch (IOException ioE) {
-      Log.e("Board state not saved", ioE.toString());
+      Log.i("saved: ", json);   // DEBUG:
+    } catch (IOException e) {
+      Log.e("Board state not saved", e.toString());
     }
   }
 
@@ -87,6 +77,18 @@ public class BoardActivity extends Activity
     writer.flush();
     fos.getFD().sync();
     writer.close();
+  }
+
+  void lockButtons() {
+    findViewById(R.id.undo_button).setEnabled(false);
+    findViewById(R.id.redo_button).setEnabled(false);
+    findViewById(R.id.pass_button).setEnabled(false);
+  }
+
+  void unlockButtons() {
+    findViewById(R.id.undo_button).setEnabled(true);
+    findViewById(R.id.redo_button).setEnabled(true);
+    findViewById(R.id.pass_button).setEnabled(true);
   }
 
   //////////////////////////////////
@@ -105,7 +107,7 @@ public class BoardActivity extends Activity
   @Override
   public void onDialogNegativeClick() {
     // "New Game"
-    board.reset();
+    boardFrag.reset();
     saveOnDestroy = false;
     saveBoardToFile(false);
     // Restart selector activity
@@ -113,20 +115,38 @@ public class BoardActivity extends Activity
     startActivity(selector);
   }
 
-  //////////////////////////////////
-  // Button click handlers
-
+  /* Button click handlers */
   public void undo(View view) {
-    if (board != null) board.undo();
+    if (boardFrag != null) {
+      lockButtons();
+      boardFrag.undo();
+      unlockButtons();
+    }
+  }
+
+  public void redo(View view) {
+    if (boardFrag != null) {
+      lockButtons();
+      boardFrag.redo();
+      unlockButtons();
+    }
   }
 
   public void pass(View view) {
-    if (board != null) board.pass();
+    if (boardFrag != null) {
+      lockButtons();
+      boolean quit = boardFrag.pass();
+      if (!quit) {
+        unlockButtons();
+      }
+    }
   }
 
   public void reset(View view) {
-    if (board != null) {
+    if (boardFrag != null) {
+      lockButtons();
       showNoticeDialog();
+      unlockButtons();
     }
   }
 }

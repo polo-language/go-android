@@ -7,9 +7,11 @@
     <string name="nineteen">19</string>
     <string name="handicap">Handicap:</string>
     <string name="undo_button">Undo</string>
+    <string name="redo_button">Redo</string>
     <string name="pass_button">Pass</string>
     <string name="reset_button">Quit</string>
     <string name="no_moves_to_undo">No moves to undo</string>
+    <string name="no_future_to_redo">No moves to redo</string>
     <string name="undo_white">White\'s move undone</string>
     <string name="undo_black">Black\'s move undone</string>
     <string name="pass_white">White passes</string>
